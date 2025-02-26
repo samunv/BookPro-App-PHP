@@ -1,4 +1,7 @@
 <?php
+
+include "../cors-conf/cors.php";
+
 require_once "./../Modelo/CitaDao.php";
 
 $daoCitas = new CitaDao();

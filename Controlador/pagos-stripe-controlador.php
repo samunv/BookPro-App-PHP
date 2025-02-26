@@ -1,5 +1,5 @@
 <?php
-header("Access-Control-Allow-Origin: http://localhost:5173");
+include "../cors-conf/cors.php";
 
 require_once '../Recursos/stripe-php-master/init.php';
 require_once '../Modelo/CitaDao.php';

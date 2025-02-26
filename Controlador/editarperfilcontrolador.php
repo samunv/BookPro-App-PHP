@@ -1,6 +1,5 @@
 <?php
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header('Content-Type: application/json');
+include "../cors-conf/cors.php";
 
 require_once "../Modelo/UsuariosDao.php";
 require_once "../Modelo/Sesion.php";

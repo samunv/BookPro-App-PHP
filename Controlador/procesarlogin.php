@@ -1,9 +1,5 @@
 <?php
-header("Access-Control-Allow-Origin: http://localhost:5173");  // Permite solicitudes desde tu frontend
-header("Access-Control-Allow-Credentials: true");  // Permite el envío de cookies (si estás usando sesiones)
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");  // Métodos permitidos
-header("Access-Control-Allow-Headers: Content-Type, Authorization");  // Encabezados permitidos
-
+include "../cors-conf/cors.php";
 
 require_once "./../Modelo/Usuarios.php";
 require_once "../Modelo/UsuariosDao.php";

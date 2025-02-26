@@ -1,7 +1,5 @@
 <?php
-header("Access-Control-Allow-Origin: http://localhost:5173");
-header('Content-Type: application/json');
-
+include "../cors-conf/cors.php";
 
 require_once "./../Modelo/Usuarios.php";
 require_once "../Modelo/UsuariosDao.php";
@@ -37,18 +35,15 @@ if (isset($_POST["nombre"]) && isset($_POST["contrasena"]) && isset($_POST["tele
 	if (!empty($verificarTelefono)) {
 		$array["error"] = "El teléfono introducido no está disponible o ya está en uso.";
 	}
-	// Si el correo exite
-	else if (!empty($verificarCorreo)) {
 
-		$mensaje = $usuarioDAO->actualizarUsuario($inputNombre, $inputTelefono, $contrasena_encriptada, $inputCorreo);
-		$array["mensaje"] = $mensaje;
-		$array["provisional"] = true; // Indicador de usuario provisional
-
-	}
-	else {
-	}
+	$usuario = new Usuarios($inputNombre, 0, $inputTelefono, $contrasena_encriptada, "../img-uploads/perfil-default.png", $inputCorreo, "");
+	$mensaje = $usuarioDAO->crearUsuario($usuario);
+	$array["mensaje"] = $mensaje;
+	$array["provisional"] = true; // Indicador de usuario provisional
 	echo json_encode($array);
 }
+
+
 
 
 if (isset($_POST["correo"])) {
@@ -60,22 +55,9 @@ if (isset($_POST["correo"])) {
 	} else {
 		// Crear un token único para confirmar el correo electrónico
 		$tokenCorreo = substr(str_shuffle("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"), 0, 8);
-
-		// Crear el objeto de usuario provisional
-		$usuarioProvisional = new Usuarios(
-			"",
-			0,
-			"",
-			"",
-			"../img-uploads/perfil-default.png",
-			$correo,
-			$tokenCorreo
-		);
-
-		$mensaje = $usuarioDAO->crearUsuario($usuarioProvisional);
 		// Enviar correo con el token
 		if (enviarCorreo($correo, $tokenCorreo)) {
-			$array["exito"] = $mensaje;
+			$array["token"] = $tokenCorreo;
 		} else {
 			$array["error"] = "Hubo un problema al enviar el correo de verificación.";
 		}
