@@ -1,270 +1,178 @@
 <?php
 require_once "Usuarios.php";
 require_once "Conexion.php";
+
 class UsuariosDao
 {
     private $conexion;
 
     public function __construct()
     {
-        return $this->conexion = new Conexion();
+        $this->conexion = new Conexion();
     }
 
-    public function leerUsuario($correo, $contrasena)
+    public function leerUsuario($correo, $contrasena, $idEmpresa)
     {
-        $consulta = mysqli_query($this->conexion->getConexion(), "SELECT * FROM usuarios WHERE correo='$correo' AND contrasena='$contrasena'") or die("Error en consulta: " . mysqli_error($this->conexion->getConexion()));
-        $datosArray = array();
-        while ($reg = mysqli_fetch_array($consulta)) {
-            $datosArray[] = $reg;
-        }
-        return $datosArray;
+        $sql = "SELECT * FROM usuarios WHERE correo=? AND contrasena=? AND idEmpresa = ?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("ssi", $correo, $contrasena, $idEmpresa);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        return $resultado->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function leerContraseñaPorCorreo($correo)
+    public function leerContraseñaPorCorreo($correo, $idEmpresa)
     {
-        // Evitar inyecciones SQL usando una variable escape
-        $conexion = $this->conexion->getConexion();
-        $correoEscapado = mysqli_real_escape_string($conexion, $correo);
-
-        $consulta = mysqli_query($conexion, "SELECT contrasena FROM usuarios WHERE correo = '$correoEscapado'");
-
-        // Verificamos si se obtuvo algún resultado
-        if ($reg = mysqli_fetch_assoc($consulta)) {
+        $sql = "SELECT contrasena FROM usuarios WHERE correo=? AND idEmpresa=?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("si", $correo, $idEmpresa);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        if ($reg = $resultado->fetch_assoc()) {
             return $reg['contrasena'];
-        } else {
-            return null;  // Si no se encuentra el correo
         }
+        return null;
     }
-
 
     public function leerUsuarioPorId($id)
     {
-        $consulta = mysqli_query($this->conexion->getConexion(), "SELECT * FROM usuarios WHERE idUsuario='$id'") or die("Error en consulta: " . mysqli_error($this->conexion->getConexion()));
-        $datosArray = array();
-        while ($reg = mysqli_fetch_array($consulta)) {
-            $datosArray[] = $reg;
-        }
-        return $datosArray;
+        $sql = "SELECT * FROM usuarios WHERE idUsuario=?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function leerUsuarioPorTelefono($telefono)
+    public function leerUsuarioPorTelefono($telefono, $idEmpresa)
     {
-        $consulta = mysqli_query($this->conexion->getConexion(), "SELECT * FROM usuarios WHERE telefono='$telefono'") or die("Error en consulta: " . mysqli_error($this->conexion->getConexion()));
-        $datosArray = array();
-        while ($reg = mysqli_fetch_array($consulta)) {
-            $datosArray[] = $reg;
-        }
-
-        return $datosArray;
+        $sql = "SELECT * FROM usuarios WHERE telefono=? AND idEmpresa=?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("si", $telefono, $idEmpresa);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function leerUsuarioPorNombre($nombre)
+    public function leerUsuarioPorNombre($nombre, $idEmpresa)
     {
-        $consulta = mysqli_query($this->conexion->getConexion(), "SELECT * FROM usuarios WHERE nombre='$nombre'") or die("Error en consulta: " . mysqli_error($this->conexion->getConexion()));
-        $datosArray = array();
-        while ($reg = mysqli_fetch_array($consulta)) {
-            $datosArray[] = $reg;
-        }
-
-        return $datosArray;
+        $sql = "SELECT * FROM usuarios WHERE nombre=? AND idEmpresa=?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("si", $nombre, $idEmpresa);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-
-    public function leerUsuarioPorCorreo($correo)
+    public function leerUsuarioPorCorreo($correo, $idEmpresa)
     {
-        $consulta = mysqli_query($this->conexion->getConexion(), "SELECT * FROM usuarios WHERE correo='$correo'") or die("Error en consulta: " . mysqli_error($this->conexion->getConexion()));
-        $datosArray = array();
-        while ($reg = mysqli_fetch_array($consulta)) {
-            $datosArray[] = $reg;
-        }
-
-        return $datosArray;
+        $sql = "SELECT * FROM usuarios WHERE correo=? AND idEmpresa=?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("si", $correo, $idEmpresa);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
-
 
     public function obtenerId($nombre)
     {
-        $consulta = mysqli_query($this->conexion->getConexion(), "SELECT idUsuario FROM usuarios WHERE nombre='$nombre'") or die("Error en consulta: " . mysqli_error($this->conexion->getConexion()));
-        $datosArray = array();
-        while ($reg = mysqli_fetch_array($consulta)) {
-            $datosArray[] = $reg;
-        }
-
-        return $datosArray;
+        $sql = "SELECT idUsuario FROM usuarios WHERE nombre=?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("s", $nombre);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
-
-
 
     public function crearUsuario(Usuarios $u)
     {
-        $sql = "INSERT INTO usuarios(nombre, permisos, telefono, contrasena, foto, correo, token) VALUES(?, ?, ?, ?, ?, ?, ?)";
-        $consulta = $this->conexion->getConexion()->prepare($sql);
-        if ($consulta) {
-            $nombre = $u->getNombre();
-            $permisos = $u->getPermisos();
-            $telefono = $u->getTelefono();
-            $contrasena = $u->getContrasena();
-            $foto = $u->getFoto();
-            $correo = $u->getCorreo();
-            $token = $u->getToken();
+        $sql = "INSERT INTO usuarios(nombre, permisos, telefono, contrasena, foto, correo, idEmpresa) VALUES(?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $nombre = $u->getNombre();
+        $permisos = $u->getPermisos();
+        $telefono = $u->getTelefono();
+        $contrasena = $u->getContrasena();
+        $foto = $u->getFoto();
+        $correo = $u->getCorreo();
+        $idEmpresa = $u->getIdEmpresa();
 
-            $consulta->bind_param("sisssss", $nombre, $permisos, $telefono, $contrasena, $foto, $correo, $token);
-
-            $resultado = $consulta->execute();  // Verificar si la ejecución tuvo éxito
-            if ($resultado) {
-                return "Se ha registrado el usuario '$correo'.";
-            } else {
-                return "Error al registrarse.";
-            }
+        $stmt->bind_param("sissssi", $nombre, $permisos, $telefono, $contrasena, $foto, $correo, $idEmpresa);
+        if ($stmt->execute()) {
+            return "Se ha registrado el usuario.";
         } else {
-            // Si la preparación falla, devolver un mensaje de error
-            return "Error al preparar la consulta";
+            return "Error al registrarse.". $stmt->error;;
         }
     }
 
     public function actualizarUsuario($nombre, $telefono, $contrasena, $correo)
     {
         $sql = "UPDATE usuarios SET nombre=?, telefono=?, contrasena=? WHERE correo=?";
-        $consulta = $this->conexion->getConexion()->prepare($sql);
-        if ($consulta) {
-            $consulta->bind_param("ssss", $nombre, $telefono, $contrasena, $correo);
-
-            $resultado = $consulta->execute();  // Verificar si la ejecución tuvo éxito
-            if ($resultado) {
-                return "Se ha actualizado el usuario '$nombre'.";
-            } else {
-                return "Error al actualizar.";
-            }
-        } else {
-            // Si la preparación falla, devolver un mensaje de error
-            return "Error al preparar la consulta";
-        }
-    }
-    public function actualizarNombre($nombre, $id)
-    {
-        $sql = "UPDATE usuarios SET nombre=? WHERE idUsuario=?";
-        $consulta = $this->conexion->getConexion()->prepare($sql);
-        if ($consulta) {
-            $consulta->bind_param("si", $nombre, $id);
-
-            $resultado = $consulta->execute();  // Verificar si la ejecución tuvo éxito
-            if ($resultado) {
-                return $nombre;
-            } else {
-                return "Error al actualizar.";
-            }
-        } else {
-            // Si la preparación falla, devolver un mensaje de error
-            return "Error al preparar la consulta";
-        }
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("ssss", $nombre, $telefono, $contrasena, $correo);
+        return $stmt->execute() ? "Se ha actualizado el usuario '$nombre'." : "Error al actualizar.";
     }
 
-    public function actualizarTelefono($telefono, $id)
+    public function actualizarNombre($nombre, $id, $idEmpresa)
     {
-        $sql = "UPDATE usuarios SET telefono=? WHERE idUsuario=?";
-        $consulta = $this->conexion->getConexion()->prepare($sql);
-        if ($consulta) {
-            $consulta->bind_param("si", $telefono, $id);
+        $sql = "UPDATE usuarios SET nombre=? WHERE idUsuario=? AND idEmpresa=?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("sii", $nombre, $id, $idEmpresa);
+        return $stmt->execute() ? $nombre : "Error al actualizar.";
+    }
 
-            $resultado = $consulta->execute();  // Verificar si la ejecución tuvo éxito
-            if ($resultado) {
-                return $telefono;
-            } else {
-                return "Error al actualizar.";
-            }
-        } else {
-            // Si la preparación falla, devolver un mensaje de error
-            return "Error al preparar la consulta";
-        }
+    public function actualizarTelefono($telefono, $id, $idEmpresa)
+    {
+        $sql = "UPDATE usuarios SET telefono=? WHERE idUsuario=? AND idEmpresa=?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("sii", $telefono, $id, $idEmpresa);
+        return $stmt->execute() ? $telefono : "Error al actualizar.";
     }
 
     public function actualizarContrasena($contrasena, $correo)
     {
         $sql = "UPDATE usuarios SET contrasena=? WHERE correo=?";
-        $consulta = $this->conexion->getConexion()->prepare($sql);
-        if ($consulta) {
-            $consulta->bind_param("ss", $contrasena, $correo);
-
-            $resultado = $consulta->execute();  // Verificar si la ejecución tuvo éxito
-            if ($resultado) {
-                return "Se ha actualizado la contraseña correctamente.";
-            } else {
-                return "Error al actualizar.";
-            }
-        } else {
-            // Si la preparación falla, devolver un mensaje de error
-            return "Error al preparar la consulta";
-        }
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("ss", $contrasena, $correo);
+        return $stmt->execute() ? "Se ha actualizado la contraseña correctamente." : "Error al actualizar.";
     }
 
-    public function actualizarFoto($foto, $id)
+    public function actualizarFoto($foto, $id, $idEmpresa)
     {
-        $sql = "UPDATE usuarios SET foto=? WHERE idUsuario=?";
-        $consulta = $this->conexion->getConexion()->prepare($sql);
-        if ($consulta) {
-            $consulta->bind_param("si", $foto, $id);
-
-            $resultado = $consulta->execute();  // Verificar si la ejecución tuvo éxito
-            if ($resultado) {
-                return "Se ha actualizado la foto de perfil.";
-            } else {
-                return "Error al actualizar.";
-            }
-        } else {
-            // Si la preparación falla, devolver un mensaje de error
-            return "Error al preparar la consulta";
-        }
+        $sql = "UPDATE usuarios SET foto=? WHERE idUsuario=? AND idEmpresa=?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("sii", $foto, $id, $idEmpresa);
+        return $stmt->execute() ? "Se ha actualizado la foto de perfil." : "Error al actualizar.";
     }
 
     public function buscarToken($token, $correo)
     {
-        $conexion = $this->conexion->getConexion();
-
-        // Preparar la consulta
-        $sql = "SELECT * FROM usuarios WHERE token = ? AND correo = ? LIMIT 1";
-        $stmt = $conexion->prepare($sql);
-
-        if (!$stmt) {
-            return false; // Error al preparar la consulta
-        }
-
-        // Vincular parámetros
+        $sql = "SELECT * FROM validacion_token WHERE token = ? AND correo = ? LIMIT 1";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
         $stmt->bind_param("ss", $token, $correo);
-
-        // Ejecutar la consulta
         $stmt->execute();
-
-        // Obtener resultados
-        $resultado = $stmt->get_result();
-
-        // Verificar si hay coincidencias
-        $existe = $resultado->num_rows > 0;
-
-        // Cerrar la consulta
-        $stmt->close();
-
-        return $existe;
+        return $stmt->get_result()->num_rows > 0;
     }
-
-
-
 
     public function eliminarUsuario($correo)
     {
         $sql = "DELETE FROM usuarios WHERE correo=?";
-        $consulta = $this->conexion->getConexion()->prepare($sql);
-        if ($consulta) {
-            $consulta->bind_param("s", $correo);
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("s", $correo);
+        return $stmt->execute() ? "Se ha eliminado el usuario." : "Error al eliminar.";
+    }
 
-            $resultado = $consulta->execute();  // Verificar si la ejecución tuvo éxito
-            if ($resultado) {
-                return "Se ha eliminado el usuario.";
-            } else {
-                return "Error al eliminar.";
-            }
+    public function registrarCorreoYtokenParaValidar($correo, $token)
+    {
+        $sql = "INSERT INTO validacion_token(correo, token) VALUES(?, ?)";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("ss", $correo, $token);
+        if ($stmt->execute()) {
+            return "Se ha almacenado el correo para confirmación";
         } else {
-            // Si la preparación falla, devolver un mensaje de error
-            return "Error al preparar la consulta";
+            return "Error al almacenar correo para confirmación.";
         }
+    }
+
+    public function eliminarCorreoParaValidar($correo)
+    {
+        $sql = "DELETE FROM validacion_token WHERE correo=?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("s", $correo);
+        return $stmt->execute() ? "Se ha eliminado el usuario." : "Error al eliminar.";
     }
 }

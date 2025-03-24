@@ -25,10 +25,11 @@ if (isset($_GET["idUsuario"])) {
 	crearNotificacion($datosCita);
 	echo json_encode($resultadoEliminar);
 }
-if (isset($_GET["correoUsuario"])) {
+if (isset($_GET["correoUsuario"])&&isset($_GET["idEmpresa"])) {
 	$correo = $_GET["correoUsuario"];
+	$idEmpresa = $_GET["idEmpresa"];
 	$daoUs = new UsuariosDao();
-	$resultado = $daoUs->leerUsuarioPorCorreo($correo);
+	$resultado = $daoUs->leerUsuarioPorCorreo($correo, $idEmpresa);
 	echo json_encode($resultado);
 }
 if(isset($_GET["fechaRecordatorio"])&&($_GET["horaRecordatorio"])&&($_GET["datosCita"])){

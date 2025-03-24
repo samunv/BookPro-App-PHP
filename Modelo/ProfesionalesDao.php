@@ -49,22 +49,38 @@ class ProfesionalesDao
         return $datosArray;
     }
 
-    public function leerProfesionalPorServicio($idServicio)
+    public function leerProfesionalPorServicio($idServicio, $idEmpresa)
     {
-        $consulta = mysqli_query($this->conexion->getConexion(), "
+        $conexion = $this->conexion->getConexion();
+    
+        $stmt = $conexion->prepare("
             SELECT profesionales.*, usuarios.*, profesional_servicio.*
             FROM profesionales
             INNER JOIN profesional_servicio ON profesionales.idProfesional = profesional_servicio.idProfesional
             INNER JOIN usuarios ON profesionales.idUsuario = usuarios.idUsuario
-            WHERE profesional_servicio.idServicio = '$idServicio'
-        ") or die("Error en consulta: " . mysqli_error($this->conexion->getConexion()));
-
-        $datosArray = array();
-        while ($reg = mysqli_fetch_array($consulta)) {
+            WHERE profesional_servicio.idServicio = ? 
+            AND usuarios.idEmpresa = ?
+        ");
+    
+        if (!$stmt) {
+            die("Error en prepare: " . $conexion->error);
+        }
+    
+        $stmt->bind_param("ii", $idServicio, $idEmpresa);
+        $stmt->execute();
+    
+        $resultado = $stmt->get_result();
+        $datosArray = [];
+    
+        while ($reg = $resultado->fetch_assoc()) {
             $datosArray[] = $reg;
         }
+    
+        $stmt->close();
+    
         return $datosArray;
     }
+    
 
     public function obtenerIdProfesionalPorIdUsuario($idUsuario)
     {

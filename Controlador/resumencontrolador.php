@@ -9,12 +9,7 @@ require_once "./../Modelo/Notificacion.php";
 require_once "./../Modelo/NotificacionDao.php";
 
 
-if (isset($_GET["idProfesionalParaNombre"])) {
-	$daoProf = new ProfesionalesDao();
-	$idProfesionaParaNombre = $_GET["idProfesionalParaNombre"];
-	$nombreProfesional = $daoProf->leerNombre($idProfesionaParaNombre);
-	echo json_encode($nombreProfesional);
-} else if (isset($_GET['dia']) && isset($_GET['hora']) && isset($_GET['idUsuario']) && isset($_GET['idProfesional']) && isset($_GET['mes']) && isset($_GET['año']) && isset($_GET['idServicio']) && isset($_GET["correo"])) {
+if (isset($_GET['dia']) && isset($_GET['hora']) && isset($_GET['idUsuario']) && isset($_GET['idProfesional']) && isset($_GET['mes']) && isset($_GET['año']) && isset($_GET['idServicio']) && isset($_GET["correo"])) {
 
 	$fecha = $_GET['dia'];
 	$hora = $_GET['hora'];

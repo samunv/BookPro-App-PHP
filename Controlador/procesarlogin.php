@@ -3,16 +3,16 @@ include "../cors-conf/cors.php";
 
 require_once "./../Modelo/Usuarios.php";
 require_once "../Modelo/UsuariosDao.php";
-require_once "../Modelo/Sesion.php";
 require_once "../Modelo/Correo.php";
 
 
 $usuarioDAO = new UsuariosDao();
-$sesion = new Sesion();
 
-if (isset($_POST["contrasenaLogin"]) && isset($_POST["correo"])) {
+
+if (isset($_POST["contrasenaLogin"]) && isset($_POST["correo"]) && isset($_POST["idEmpresa"])) {
 	$inputContrasena = $_POST["contrasenaLogin"];
 	$inputCorreo = $_POST["correo"];
+	$idEmpresa = $_POST["idEmpresa"];
 
 	$response = [];  // Estructura de respuesta unificada
 
@@ -26,11 +26,10 @@ if (isset($_POST["contrasenaLogin"]) && isset($_POST["correo"])) {
 
 
 	// Verificar si el usuario existe
-	$contrasenaFinal = obtenerContraseñaEncriptada($inputContrasena, $inputCorreo);
-	$usuarioVerificado = $usuarioDAO->leerUsuario($inputCorreo, $contrasenaFinal);
+	$contrasenaFinal = obtenerContraseñaEncriptada($inputContrasena, $inputCorreo, $idEmpresa);
+	$usuarioVerificado = $usuarioDAO->leerUsuario($inputCorreo, $contrasenaFinal, $idEmpresa);
 
 	if (!empty($usuarioVerificado)) {
-		// Iniciar sesión y enviar correo
 
 		// Devolver los datos del usuario
 		$response["usuario"] = $usuarioVerificado[0];
@@ -40,11 +39,11 @@ if (isset($_POST["contrasenaLogin"]) && isset($_POST["correo"])) {
 	echo json_encode($response);  // Enviar una única respuesta JSON
 }
 
-function obtenerContraseñaEncriptada($contrasenaRecibida, $correoRecibido)
+function obtenerContraseñaEncriptada($contrasenaRecibida, $correoRecibido, $idEmpresa)
 {
 	$usuarioDAO = new UsuariosDao();
 	// Recuperamos el hash almacenado en la base de datos
-	$encriptado = $usuarioDAO->leerContraseñaPorCorreo($correoRecibido);
+	$encriptado = $usuarioDAO->leerContraseñaPorCorreo($correoRecibido, $idEmpresa);
 
 	// Verificar la contraseña ingresada con el hash almacenado
 	if (password_verify($contrasenaRecibida, $encriptado)) {
@@ -56,7 +55,6 @@ function obtenerContraseñaEncriptada($contrasenaRecibida, $correoRecibido)
 }
 
 if (isset($_GET["correoRecuperar"])) {
-	$sesion->setUsuarioProvisional($_GET["correoRecuperar"]);
 	$destinatario = $_GET["correoRecuperar"];
 	$correo = new Correo($destinatario, "Recuperar mi Cuenta", "Haz click en este enlace para recuperar tu cuenta http://localhost/barbershopWebApp/Vista/recuperarcuenta.php?correo=$destinatario");
 	$correo->enviarCorreo();

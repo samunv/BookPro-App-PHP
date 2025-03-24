@@ -9,9 +9,9 @@ class ServicioDao
         return $this->conexion = new Conexion();
     }
 
-    public function leerServicios()
+    public function leerServicios($idEmpresa)
     {
-        $consulta = mysqli_query($this->conexion->getConexion(), "SELECT * FROM servicios") or die("Error en consulta: " . mysqli_error($this->conexion->getConexion()));
+        $consulta = mysqli_query($this->conexion->getConexion(), "SELECT * FROM servicios WHERE idEmpresa='$idEmpresa'") or die("Error en consulta: " . mysqli_error($this->conexion->getConexion()));
         $datosArray = array();
         while ($reg = mysqli_fetch_array($consulta)) {
             $datosArray[] = $reg;

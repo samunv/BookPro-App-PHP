@@ -36,13 +36,19 @@ class NotificacionDAO
 
     public function leerNotificacionesPorDestinatario($destinatario)
     {
-        $consulta = mysqli_query($this->conexion->getConexion(), "SELECT * FROM notificaciones WHERE destinatario='$destinatario'") or die("Error en consulta: " . mysqli_error($this->conexion->getConexion()));
+        $sql = "SELECT * FROM notificaciones WHERE destinatario = ?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("s", $destinatario);
+        $stmt->execute();
+        $result = $stmt->get_result();
         $datosArray = array();
-        while ($reg = mysqli_fetch_array($consulta)) {
+        while ($reg = $result->fetch_assoc()) {
             $datosArray[] = $reg;
         }
+        $stmt->close();
         return $datosArray;
     }
+    
 
     public function borrarNotificacionesPorCorreo($correo)
     {

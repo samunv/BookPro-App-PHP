@@ -1,55 +1,57 @@
 <?php
 require_once "Conexion.php";
+
 class HorariosDao
 {
     private $conexion;
 
     public function __construct()
     {
-        return $this->conexion = new Conexion();
+        $this->conexion = new Conexion();
     }
 
     public function leerHorarios()
     {
-        $consulta = mysqli_query(
-            $this->conexion->getConexion(),
-            "SELECT hora FROM horarios"
-        ) or die("Error en consulta: " . mysqli_error($this->conexion->getConexion()));
+        $sql = "SELECT hora FROM horarios";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
         $datosArray = array();
-        while ($reg = mysqli_fetch_array($consulta)) {
+        while ($reg = $result->fetch_assoc()) {
             $datosArray[] = $reg;
         }
+        
+        $stmt->close();
         return $datosArray;
     }
 
     public function leerHorasLibres($fecha, $mes, $año, $idProfesional)
     {
-        $consulta = mysqli_query(
-            $this->conexion->getConexion(),
-            " SELECT 
-        h.hora
-    FROM 
-        horarios h
-    LEFT JOIN 
-        citas c
-    ON 
-        h.hora = c.hora
-        AND c.fecha = '$fecha'
-        AND c.mes = '$mes'
-        AND c.idProfesional = '$idProfesional'
-        AND c.año = '$año'
-    WHERE 
-        c.hora IS NULL
-    ORDER BY 
-        h.hora"
-        )
-            or die("Error en consulta: " . mysqli_error($this->conexion->getConexion()));
+        $sql = "SELECT h.hora
+                FROM horarios h
+                WHERE NOT EXISTS (
+                    SELECT 1 
+                    FROM citas c
+                    WHERE c.hora = h.hora
+                    AND c.fecha = ?
+                    AND c.mes = ?
+                    AND c.idProfesional = ?
+                    AND c.año = ?
+                )
+                ORDER BY h.hora";
+
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("ssii", $fecha, $mes, $idProfesional, $año);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
         $datosArray = array();
-        while ($reg = mysqli_fetch_array($consulta)) {
+        while ($reg = $result->fetch_assoc()) {
             $datosArray[] = $reg;
         }
+
+        $stmt->close();
         return json_encode($datosArray);
     }
 }

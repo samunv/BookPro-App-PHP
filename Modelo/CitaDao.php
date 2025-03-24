@@ -134,8 +134,6 @@ class CitaDao
 
     public function crearCita(Cita $c)
     {
-
-        // Validar antes de insertar
         if (!$this->verificarCitaExistente(
             $c->getFecha(),
             $c->getHora(),
@@ -144,7 +142,7 @@ class CitaDao
             $c->getAño(),
             $c->getIdServicio()
         )) {
-            return "Error: La cita ya existe.";
+            return ["error" => "La cita ya existe."];
         }
 
         $sql = "INSERT INTO citas(idUsuario, fecha, hora, idProfesional, mes, año, idServicio) VALUES(?, ?, ?, ?, ?, ?, ?)";
@@ -159,19 +157,18 @@ class CitaDao
             $idServicio = $c->getIdServicio();
             $consulta->bind_param("issisii", $idUsuario, $fecha, $hora, $idProfesional, $mes, $año, $idServicio);
 
-            $resultado = $consulta->execute();  // Verificar si la ejecución tuvo éxito
+            $resultado = $consulta->execute();
             if ($resultado) {
-                // Recuperar el ID generado automáticamente por la base de datos
-                $idCita = $consulta->insert_id;
-                return $idCita;
+                $idCita = $this->conexion->getConexion()->insert_id;
+                return ["success" => true, "idCita" => $idCita, "mensaje" => "Cita creada con éxito."];
             } else {
-                return "Error al crear la cita";
+                return ["error" => "Error al crear la cita."];
             }
         } else {
-            // Si la preparación falla, devolver un mensaje de error
-            return "Error al preparar la consulta";
+            return ["error" => "Error al preparar la consulta."];
         }
     }
+
 
     public function leerDiasOcupados()
     {

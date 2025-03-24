@@ -57,7 +57,7 @@ class Usuarios
      */
     private $color2;
 
-    /**
+    private $idEmpresa;    /**
      * Constructor de la clase Usuarios.
      *
      * @param int $idUsuario
@@ -65,11 +65,10 @@ class Usuarios
      * @param string $permisos
      * @param string $telefono
      * @param string $contrasena
-     * @param String $foto
-     * @param String $correo
-     * @param String $token
+     * @param string $foto
+     * @param string $correo
      */
-    public function __construct($nombre, $permisos, $telefono, $contrasena, $foto, $correo, $token)
+    public function __construct($nombre, $permisos, $telefono, $contrasena, $foto, $correo, $idEmpresa)
     {
         $this->nombre = $nombre;
         $this->permisos = $permisos;
@@ -77,8 +76,8 @@ class Usuarios
         $this->contrasena = $contrasena;
         $this->foto = $foto;
         $this->correo = $correo;
-        $this->token = $token;
         $this->setColors();
+        $this->idEmpresa = $idEmpresa;
     }
 
     /**
@@ -268,6 +267,12 @@ class Usuarios
     {
         return $this->color2;
     }
+
+    public function getIdEmpresa()
+    {
+        return $this->idEmpresa;
+    }
+
 
     public function setColors()
     {

@@ -5,7 +5,6 @@ require_once "../Modelo/ProfesionalesDao.php";
 require_once "../Modelo/UsuariosDao.php";
 require_once "./../Modelo/CitaDao.php";
 require_once "../Modelo/ProfesionalesDao.php";
-require_once "../Modelo/Sesion.php";
 require_once "../Modelo/ServicioDao.php";
 require_once "../Modelo/HorariosDao.php";
 require_once "../Modelo/Notificacion.php";
@@ -15,7 +14,7 @@ require_once "../Modelo/Correo.php";
 if ((isset($_GET['cerrarSesionBoolean']) && $_GET['cerrarSesionBoolean'] === 'true')) {
 	// Si se recibe el parámetro de cerrarSesionBoolean (booleano) como true:
 
-	$sesion = new Sesion();
+
 	$array = array();
 
 	if (isset($_SESSION["nombre"])) {
@@ -62,7 +61,7 @@ if (isset($_GET["obtenerServicio"]) && $_GET["obtenerServicio"] === "true" && is
 if (isset($_GET["sesion"])) {
 	$sesion = $_GET["sesion"];
 	$daoUs = new UsuariosDao();
-	$resultado = $daoUs->leerUsuarioPorCorreo($sesion);
+	// $resultado = $daoUs->leerUsuarioPorCorreo($sesion);
 	echo json_encode($resultado[0]);
 }
 if (isset($_GET["idCitaParaEliminar"]) && isset($_GET["correoParaEliminar"]) && isset($_GET["datosCitaParaEliminar"])) {
