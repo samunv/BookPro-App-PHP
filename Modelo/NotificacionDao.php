@@ -13,14 +13,15 @@ class NotificacionDAO
 
     public function crearNotificacion(Notificacion $n)
     {
-        $sql = "INSERT INTO notificaciones(titulo, mensaje, destinatario, imagen_notificacion) VALUES(?, ?, ?, ?)";
+        $sql = "INSERT INTO notificaciones(titulo, mensaje, destinatario, imagen_notificacion, idEmpresa) VALUES(?, ?, ?, ?, ?)";
         $consulta = $this->conexion->getConexion()->prepare($sql);
         if ($consulta) {
             $titulo = $n->getTitulo();
             $mensaje = $n->getMensaje();
             $destinatario = trim($n->getDestinatario());
             $imagen = $n->getImagen_notificacion();
-            $consulta->bind_param("ssss", $titulo, $mensaje, $destinatario, $imagen);
+            $idEmpresa = $n->getIdEmpresa();
+            $consulta->bind_param("ssssi", $titulo, $mensaje, $destinatario, $imagen, $idEmpresa);
 
             $resultado = $consulta->execute();  // Verificar si la ejecución tuvo éxito
             if ($resultado) {
@@ -34,11 +35,11 @@ class NotificacionDAO
         }
     }
 
-    public function leerNotificacionesPorDestinatario($destinatario)
+    public function leerNotificacionesPorDestinatario($destinatario, $idEmpresa)
     {
-        $sql = "SELECT * FROM notificaciones WHERE destinatario = ?";
+        $sql = "SELECT * FROM notificaciones WHERE destinatario = ? AND idEmpresa = ?";
         $stmt = $this->conexion->getConexion()->prepare($sql);
-        $stmt->bind_param("s", $destinatario);
+        $stmt->bind_param("si", $destinatario, $idEmpresa);
         $stmt->execute();
         $result = $stmt->get_result();
         $datosArray = array();
@@ -50,12 +51,12 @@ class NotificacionDAO
     }
     
 
-    public function borrarNotificacionesPorCorreo($correo)
+    public function borrarNotificacionesPorCorreo($correo, $idEmpresa)
     {
-        $sql = "DELETE FROM notificaciones where destinatario=?";
+        $sql = "DELETE FROM notificaciones where destinatario=? AND idEmpresa = ?";
         $consulta = $this->conexion->getConexion()->prepare($sql);
         if ($consulta) {
-            $consulta->bind_param("s", $correo);
+            $consulta->bind_param("si", $correo, $idEmpresa);
             $resultado = $consulta->execute();  // Verificar si la ejecución tuvo éxito
             if ($resultado) {
                 return "Se han eliminado las notificaciones.";

@@ -18,11 +18,12 @@ if (isset($_GET["idUsuario"])) {
 	$idCita = $_GET['idCita'];
 	$resultado = $daoCitas->leerCitaPorId($idCita);
 	echo json_encode($resultado);
-} else if (isset($_GET["idCitaEliminar"]) && isset($_GET["datosCita"])) {
+} else if (isset($_GET["idCitaEliminar"]) && isset($_GET["datosCita"])&&isset($_GET["idEmpresa"])) {
 	$idCitaEliminar = $_GET['idCitaEliminar'];
+	$idEmpresa = $_GET["idEmpresa"];
 	$resultadoEliminar = $daoCitas->eliminarCita($idCitaEliminar);
 	$datosCita = json_decode($_GET["datosCita"], true);
-	crearNotificacion($datosCita);
+	crearNotificacion($datosCita, $idEmpresa);
 	echo json_encode($resultadoEliminar);
 }
 if (isset($_GET["correoUsuario"])&&isset($_GET["idEmpresa"])) {
@@ -37,9 +38,9 @@ if(isset($_GET["fechaRecordatorio"])&&($_GET["horaRecordatorio"])&&($_GET["datos
 
 }
 
-function crearNotificacion($datos)
+function crearNotificacion($datos, $idEmpresa)
 {
-	$notificacion = new Notificacion("Reserva cancelada", $datos['cliente'] . " ha cancelado la reserva de " . $datos['nombreServicio'] . " con fecha: " . $datos['fecha'] . " de " . $datos['mes'] . " de " . $datos['año'] . " a las " . $datos['hora'], $datos['correoProfesional']);
+	$notificacion = new Notificacion("Reserva cancelada", $datos['cliente'] . " ha cancelado la reserva de " . $datos['nombreServicio'] . " con fecha: " . $datos['fecha'] . " de " . $datos['mes'] . " de " . $datos['año'] . " a las " . $datos['hora'], $datos['correoProfesional'], $idEmpresa);
 	$notificacion->setImagen_notificacion("./img/notificacion-eliminar.png");
 	$notificacion->enviarNotificacionCorreo($notificacion);
 

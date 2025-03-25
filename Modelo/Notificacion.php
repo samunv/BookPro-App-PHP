@@ -8,12 +8,14 @@ class Notificacion
     private $destinatario;
     private $imagen_notificacion;
     private Correo $correo;
+    private $idEmpresa;
 
-    function __construct($titulo, $mensaje, $destinatario)
+    function __construct($titulo, $mensaje, $destinatario, $idEmpresa)
     {
         $this->titulo = $titulo;
         $this->mensaje = $mensaje;
         $this->destinatario = $destinatario;
+        $this->idEmpresa = $idEmpresa;
     }
 
     /**
@@ -72,6 +74,23 @@ class Notificacion
     public function setDestinatario($destinatario)
     {
         $this->destinatario = $destinatario;
+
+        return $this;
+    }
+
+    public function getIdEmpresa()
+    {
+        return $this->idEmpresa;
+    }
+
+    /**
+     * Set the value of destinatario
+     *
+     * @return  self
+     */
+    public function setIdEmpresa($idEmpresa)
+    {
+        $this->idEmpresa = $idEmpresa;
 
         return $this;
     }

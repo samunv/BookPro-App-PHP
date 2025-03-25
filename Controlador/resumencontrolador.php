@@ -9,7 +9,7 @@ require_once "./../Modelo/Notificacion.php";
 require_once "./../Modelo/NotificacionDao.php";
 
 
-if (isset($_GET['dia']) && isset($_GET['hora']) && isset($_GET['idUsuario']) && isset($_GET['idProfesional']) && isset($_GET['mes']) && isset($_GET['año']) && isset($_GET['idServicio']) && isset($_GET["correo"])) {
+if (isset($_GET['dia']) && isset($_GET['hora']) && isset($_GET['idUsuario']) && isset($_GET['idProfesional']) && isset($_GET['mes']) && isset($_GET['año']) && isset($_GET['idServicio']) && isset($_GET["correo"])&& isset($_GET["idEmpresa"])) {
 
 	$fecha = $_GET['dia'];
 	$hora = $_GET['hora'];
@@ -19,12 +19,13 @@ if (isset($_GET['dia']) && isset($_GET['hora']) && isset($_GET['idUsuario']) && 
 	$año = $_GET['año'];
 	$idServicio  = $_GET['idServicio'];
 	$correo = $_GET['correo'];
+	$idEmpresa = $_GET['idEmpresa'];
 
 	$daoCita = new CitaDao();
 	$cita = new Cita($idUsuario, $fecha, $hora, $idProfesional, $mes, $año, $idServicio);
 	$fechaCita = $fecha . " de " .  $mes . " de " . $año . " a las " . $hora;
 
-	$notificacion = new Notificacion("Reserva de Cita", "Has reservado una cita el $fechaCita.", $correo);
+	$notificacion = new Notificacion("Reserva de Cita", "Has reservado una cita el $fechaCita.", $correo, $idEmpresa);
 	$notificacion->setImagen_notificacion("./img/notificacion-reserva.png");
 	enviarNotificacion($notificacion);
 
@@ -32,7 +33,7 @@ if (isset($_GET['dia']) && isset($_GET['hora']) && isset($_GET['idUsuario']) && 
 
 
 	echo json_encode($reservaCompletada);
-} else if (isset($_GET["correoDestinatario"]) && isset($_GET["cliente"]) && isset($_GET["hora"]) && isset($_GET["fecha"]) && isset($_GET["mes"]) && isset($_GET["año"]) && isset($_GET["servicio"])) {
+} else if (isset($_GET["correoDestinatario"]) && isset($_GET["cliente"]) && isset($_GET["hora"]) && isset($_GET["fecha"]) && isset($_GET["mes"]) && isset($_GET["año"]) && isset($_GET["servicio"])&& isset($_GET["idEmpresa"])) {
 
 	$destinatario = $_GET["correoDestinatario"];
 	$cliente = $_GET["cliente"];
@@ -41,10 +42,11 @@ if (isset($_GET['dia']) && isset($_GET['hora']) && isset($_GET['idUsuario']) && 
 	$fecha = $_GET["fecha"];
 	$mes = $_GET["mes"];
 	$año = $_GET["año"];
+	$idEmpresa = $_GET["idEmpresa"];
 
 	$fechaCita = $fecha . " de " .  $mes . " de " . $año . " a las " . $hora;
 
-	$notificacion = new Notificacion("Reserva de Cita", "$cliente ha reservado una cita de $servicio el $fechaCita.", $destinatario);
+	$notificacion = new Notificacion("Reserva de Cita", "$cliente ha reservado una cita de $servicio el $fechaCita.", $destinatario, $idEmpresa);
 	$notificacion->setImagen_notificacion("./img/notificacion-reserva.png");
 	enviarNotificacion($notificacion);
 	echo json_encode("Notificación enviada al destinatario.");

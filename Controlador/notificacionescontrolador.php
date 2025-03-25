@@ -6,19 +6,15 @@ require_once "./../Modelo/UsuariosDao.php";
 
 $daoNot = new NotificacionDAO();
 
-if (isset($_GET["correo"])) {
+if (isset($_GET["correo"])&&isset($_GET["idEmpresa"])) {
 	$correo = $_GET["correo"];
-	$resultado = $daoNot->leerNotificacionesPorDestinatario($correo);
+	$idEmpresa = $_GET["idEmpresa"];
+	$resultado = $daoNot->leerNotificacionesPorDestinatario($correo, $idEmpresa);
 	echo json_encode($resultado);
 }
-if (isset($_GET["correoUsuario"])) {
-	$correo = $_GET["correoUsuario"];
-	$daoUs = new UsuariosDao();
-	$resultado = $daoUs->leerUsuarioPorCorreo($correo);
-	echo json_encode($resultado);
-}
-if ((isset($_GET["borrarNotificaciones"]) && $_GET["borrarNotificaciones"] === "true") && isset($_GET["correoBorrar"])) {
+if ((isset($_GET["borrarNotificaciones"]) && $_GET["borrarNotificaciones"] === "true") && isset($_GET["correoBorrar"])&&isset($_GET["idEmpresa"])) {
 	$correo = $_GET["correoBorrar"];
-	$resultado = $daoNot->borrarNotificacionesPorCorreo($correo);
+	$idEmpresa = $_GET["idEmpresa"];
+	$resultado = $daoNot->borrarNotificacionesPorCorreo($correo, $idEmpresa);
 	echo json_encode($resultado);
 }

@@ -4,16 +4,11 @@ include "../cors-conf/cors.php";
 require_once "../Modelo/UsuariosDao.php";
 require_once "../Modelo/NotificacionDao.php";
 
-if(isset($_GET["sesion"])){
-	$sesion= $_GET["sesion"];
-	$daoUs = new UsuariosDao();
-	$resultado = $daoUs->leerUsuarioPorCorreo($sesion);
-	echo json_encode($resultado);
-}
 
-if (isset($_GET["correoNotificaciones"])) {
+if (isset($_GET["correoNotificaciones"])&&isset($_GET["idEmpresa"])) {
 	$daoNot = new NotificacionDAO();
 	$correo = $_GET["correoNotificaciones"];
-	$resultado = $daoNot->leerNotificacionesPorDestinatario($correo);
+	$idEmpresa = $_GET["idEmpresa"];
+	$resultado = $daoNot->leerNotificacionesPorDestinatario($correo, $idEmpresa);
 	echo json_encode($resultado);
 }
