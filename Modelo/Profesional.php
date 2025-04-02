@@ -4,12 +4,12 @@ class Profesional
 {
     // Propiedades privadas
     private $idProfesional;
-    private $nombre;
+    private $idUsuario;
 
     // Constructor
-    public function __construct($nombre)
+    public function __construct($idUsuario)
     {
-        $this->nombre = $nombre;
+        $this->idUsuario = $idUsuario;
     }
 
     // Getter para idProfesional
@@ -25,14 +25,14 @@ class Profesional
     }
 
     // Getter para nombre
-    public function getNombre()
+    public function getIdUsuario()
     {
-        return $this->nombre;
+        return $this->idUsuario;
     }
 
     // Setter para nombre
-    public function setNombre($nombre)
+    public function setIdUsuario($idUsuario)
     {
-        $this->nombre = $nombre;
+        $this->idUsuario = $idUsuario;
     }
 }

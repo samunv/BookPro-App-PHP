@@ -7,7 +7,7 @@ class Empresa {
     private $cif;
     private $telefono;
     private $correo;
-    private $logo_principal;
+    private $banner;
     private $logo1por1;
     private $color1;
     private $color2;
@@ -46,8 +46,8 @@ class Empresa {
         return $this->correo;
     }
 
-    public function getLogoPrincipal() {
-        return $this->logo_principal;
+    public function getBanner() {
+        return $this->banner;
     }
 
     public function getLogo1por1() {
@@ -87,8 +87,8 @@ class Empresa {
         $this->correo = $correo;
     }
 
-    public function setLogoPrincipal($logo_principal) {
-        $this->logo_principal = $logo_principal;
+    public function setBanner($banner) {
+        $this->banner = $banner;
     }
 
     public function setLogo1por1($logo1por1) {

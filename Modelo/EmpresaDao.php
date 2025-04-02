@@ -16,15 +16,15 @@ class EmpresaDAO
     public function crear(Empresa $empresa)
     {
         $sql = "INSERT INTO empresas 
-        (nombre_empresa, direccion, cif, telefono, correo, logo_principal, logo1por1, color1, color2) 
+        (nombre_empresa, direccion, cif, telefono, correo, banner, logo1por1, color1, color2) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        $logoPrincipal = $empresa->getLogoPrincipal() ?? "../img-uploads/empresa-default.png";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+
+        $banner = $empresa->getBanner() ?? "";
         $logo1por1 = $empresa->getLogo1por1() ?? "../img-uploads/empresa-default.png";
         $color1 = $empresa->getColor1() ?? "#003883";
         $color2 = $empresa->getColor2() ?? "#ebf3ff";
-
-        $stmt = $this->conexion->getConexion()->prepare($sql);
         $nombreEmpresa = $empresa->getNombreEmpresa();
         $direccion = $empresa->getDireccion();
         $cif = $empresa->getCif();
@@ -38,7 +38,7 @@ class EmpresaDAO
             $cif,
             $telefono,
             $correo,
-            $logoPrincipal,
+            $banner,
             $logo1por1,
             $color1,
             $color2
@@ -133,9 +133,9 @@ class EmpresaDAO
 
 
     // Actualizar empresa (UPDATE)
-public function actualizar($idEmpresa, $empresa)
-{
-    $sql = "UPDATE empresas SET 
+    public function actualizar($idEmpresa, $empresa)
+    {
+        $sql = "UPDATE empresas SET 
         nombre_empresa = ?, 
         direccion = ?, 
         cif = ?, 
@@ -143,26 +143,79 @@ public function actualizar($idEmpresa, $empresa)
         correo = ?,
         logo1por1 = ?, 
         color1 = ?,
-        color2 = ?
+        color2 = ?, 
+        banner = ?
         WHERE idEmpresa = ?";
 
-    try {
+        try {
+            $stmt = $this->conexion->getConexion()->prepare($sql);
+
+            if (!$stmt) {
+                throw new Exception("Error al preparar la consulta: " . $this->conexion->getConexion()->error);
+            }
+
+            $stmt->bind_param(
+                "sssssssssi",
+                $empresa['nombre_empresa'],
+                $empresa['direccion'],
+                $empresa['cif'],
+                $empresa['telefono'],
+                $empresa['correo'],
+                $empresa['logo'],
+                $empresa['color1'],
+                $empresa['color2'],
+                $empresa['banner'],
+                $idEmpresa
+            );
+
+            $resultado = $stmt->execute();
+
+            if (!$resultado) {
+                throw new Exception("Error al ejecutar la consulta: " . $stmt->error);
+            }
+
+            $stmt->close();
+
+            return [
+                "exito" => "Empresa actualizada correctamente"
+            ];
+        } catch (mysqli_sql_exception $e) {
+
+            // Código de error específico de clave duplicada
+            if ($e->getCode() == 1062) {
+                return [
+                    "error" => "Ya existe una empresa con ese valor único (probablemente el CIF o el correo está duplicado)."
+                ];
+            }
+
+            return [
+                "error" => "Error en la base de datos: " . $e->getMessage()
+            ];
+        } catch (Exception $e) {
+            return [
+                "error" => "Error: " . $e->getMessage()
+            ];
+        }
+    }
+
+    public function actualizarFondo($idEmpresa)
+    {
+        $sql = "UPDATE empresas SET 
+        banner = ?
+        WHERE idEmpresa = ?";
+
+
         $stmt = $this->conexion->getConexion()->prepare($sql);
 
         if (!$stmt) {
             throw new Exception("Error al preparar la consulta: " . $this->conexion->getConexion()->error);
         }
 
+        $stringVacio = "";
+
         $stmt->bind_param(
-            "ssssssssi",
-            $empresa['nombre_empresa'],
-            $empresa['direccion'],
-            $empresa['cif'],
-            $empresa['telefono'],
-            $empresa['correo'],
-            $empresa['logo'],
-            $empresa['color1'],
-            $empresa['color2'],
+            "si",
+            $stringVacio,
             $idEmpresa
         );
 
@@ -174,29 +227,8 @@ public function actualizar($idEmpresa, $empresa)
 
         $stmt->close();
 
-        return [
-            "exito" => "Empresa actualizada correctamente"
-        ];
-
-    } catch (mysqli_sql_exception $e) {
-
-        // Código de error específico de clave duplicada
-        if ($e->getCode() == 1062) {
-            return [
-                "error" => "Ya existe una empresa con ese valor único (probablemente el CIF o el correo está duplicado)."
-            ];
-        }
-
-        return [
-            "error" => "Error en la base de datos: " . $e->getMessage()
-        ];
-
-    } catch (Exception $e) {
-        return [
-            "error" => "Error: " . $e->getMessage()
-        ];
+        return "Banner eliminado exitosamente";
     }
-}
 
 
     // Eliminar empresa (DELETE)

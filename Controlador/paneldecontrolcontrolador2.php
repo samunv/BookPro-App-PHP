@@ -11,22 +11,6 @@ require_once "../Modelo/Notificacion.php";
 require_once "../Modelo/NotificacionDao.php";
 require_once "../Modelo/Correo.php";
 
-if ((isset($_GET['cerrarSesionBoolean']) && $_GET['cerrarSesionBoolean'] === 'true')) {
-	// Si se recibe el parámetro de cerrarSesionBoolean (booleano) como true:
-
-
-	$array = array();
-
-	if (isset($_SESSION["nombre"])) {
-		$cerrar = $sesion->cerrarSesion();
-		$array['exito'] = "Sesión cerrada";
-	} else {
-		$array['error'] = "No existe una sesión";
-	}
-
-	echo json_encode($array);
-}
-
 
 
 if (isset($_GET['idUsuarioParaIdProfesional'])) {
@@ -58,12 +42,7 @@ if (isset($_GET["obtenerServicio"]) && $_GET["obtenerServicio"] === "true" && is
 	$respuesta = $daoServ->leerServiciosDeIdProfesional($_GET["idProfesionalParaServicios"]);
 	echo json_encode($respuesta);
 }
-if (isset($_GET["sesion"])) {
-	$sesion = $_GET["sesion"];
-	$daoUs = new UsuariosDao();
-	// $resultado = $daoUs->leerUsuarioPorCorreo($sesion);
-	echo json_encode($resultado[0]);
-}
+
 if (isset($_GET["idCitaParaEliminar"]) && isset($_GET["correoParaEliminar"]) && isset($_GET["datosCitaParaEliminar"])) {
 	$daoCitas = new CitaDao();
 	$idCitaParaEliminar = $_GET["idCitaParaEliminar"];
@@ -80,7 +59,7 @@ if (isset($_GET["idCitaParaEliminar"]) && isset($_GET["correoParaEliminar"]) && 
 function crearNotificacion($correo, $datos)
 {
 	$datos = json_decode($datos, true);
-	$notificacion = new Notificacion("Reserva Cancelada", "Se ha cancelado tu reserva de  " . $datos['servicio'] . " el " . $datos['fecha'] . " de " . $datos['mes'] . " de " . $datos['año'] . " a las " . $datos['hora'], $correo);
+	$notificacion = new Notificacion("Reserva Cancelada", "Se ha cancelado tu reserva de  " . $datos['servicio'] . " el " . $datos['fecha'] . " de " . $datos['mes'] . " de " . $datos['año'] . " a las " . $datos['hora'], $correo, "");
 
 	$notificacion->setImagen_notificacion("./img/notificacion-eliminar.png");
 	$daoNotificacion = new NotificacionDAO();

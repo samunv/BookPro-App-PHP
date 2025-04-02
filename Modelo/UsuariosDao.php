@@ -70,14 +70,20 @@ class UsuariosDao
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
-    public function obtenerId($nombre)
+    public function obtenerId($correo, $idEmpresa)
     {
-        $sql = "SELECT idUsuario FROM usuarios WHERE nombre=?";
+        $sql = "SELECT idUsuario FROM usuarios WHERE correo=? AND idEmpresa=?";
         $stmt = $this->conexion->getConexion()->prepare($sql);
-        $stmt->bind_param("s", $nombre);
+        $stmt->bind_param("si", $correo, $idEmpresa);
         $stmt->execute();
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+        // Obtener el primer resultado y devolver solo el idUsuario
+        $resultado = $stmt->get_result()->fetch_assoc();
+
+        // Si hay resultados, devolver el idUsuario, si no, devolver null o un valor indicativo
+        return $resultado ? $resultado['idUsuario'] : null;
     }
+
 
     public function crearUsuario(Usuarios $u)
     {
@@ -95,7 +101,7 @@ class UsuariosDao
         if ($stmt->execute()) {
             return "Se ha registrado el usuario.";
         } else {
-            return "Error al registrarse.". $stmt->error;;
+            return "Error al registrarse." . $stmt->error;;
         }
     }
 

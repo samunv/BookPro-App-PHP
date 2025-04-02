@@ -9,9 +9,9 @@ require_once "./../Modelo/Notificacion.php";
 require_once "./../Modelo/NotificacionDao.php";
 
 
-if (isset($_GET['dia']) && isset($_GET['hora']) && isset($_GET['idUsuario']) && isset($_GET['idProfesional']) && isset($_GET['mes']) && isset($_GET['año']) && isset($_GET['idServicio']) && isset($_GET["correo"])&& isset($_GET["idEmpresa"])) {
+if (isset($_GET['fecha']) && isset($_GET['hora']) && isset($_GET['idUsuario']) && isset($_GET['idProfesional']) && isset($_GET['mes']) && isset($_GET['año']) && isset($_GET['idServicio']) && isset($_GET["correo"]) && isset($_GET["idEmpresa"])) {
 
-	$fecha = $_GET['dia'];
+	$fecha = $_GET['fecha'];
 	$hora = $_GET['hora'];
 	$idUsuario = $_GET['idUsuario'];
 	$idProfesional = $_GET['idProfesional'];
@@ -27,13 +27,13 @@ if (isset($_GET['dia']) && isset($_GET['hora']) && isset($_GET['idUsuario']) && 
 
 	$notificacion = new Notificacion("Reserva de Cita", "Has reservado una cita el $fechaCita.", $correo, $idEmpresa);
 	$notificacion->setImagen_notificacion("./img/notificacion-reserva.png");
-	enviarNotificacion($notificacion);
+
 
 	$reservaCompletada = $daoCita->crearCita($cita);
-
+	enviarNotificacion($notificacion);
 
 	echo json_encode($reservaCompletada);
-} else if (isset($_GET["correoDestinatario"]) && isset($_GET["cliente"]) && isset($_GET["hora"]) && isset($_GET["fecha"]) && isset($_GET["mes"]) && isset($_GET["año"]) && isset($_GET["servicio"])&& isset($_GET["idEmpresa"])) {
+} else if (isset($_GET["correoDestinatario"]) && isset($_GET["cliente"]) && isset($_GET["hora"]) && isset($_GET["fecha"]) && isset($_GET["mes"]) && isset($_GET["año"]) && isset($_GET["servicio"]) && isset($_GET["idEmpresa"])) {
 
 	$destinatario = $_GET["correoDestinatario"];
 	$cliente = $_GET["cliente"];

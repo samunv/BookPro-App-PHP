@@ -24,9 +24,12 @@ class Conexion
         if ($this->conexion->connect_error) {
             die("Error de conexión con la base de datos.");
         }
+        
     }
     public function getConexion()
     {
         return $this->conexion;
     }
+
+    
 }
