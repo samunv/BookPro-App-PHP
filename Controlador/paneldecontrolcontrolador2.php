@@ -11,6 +11,7 @@ require_once "../Modelo/Notificacion.php";
 require_once "../Modelo/NotificacionDao.php";
 require_once "../Modelo/Correo.php";
 
+header('Content-Type: application/json');
 
 
 if (isset($_GET['idUsuarioParaIdProfesional'])) {
@@ -43,27 +44,53 @@ if (isset($_GET["obtenerServicio"]) && $_GET["obtenerServicio"] === "true" && is
 	echo json_encode($respuesta);
 }
 
-if (isset($_GET["idCitaParaEliminar"]) && isset($_GET["correoParaEliminar"]) && isset($_GET["datosCitaParaEliminar"])) {
+if (isset($_GET["idCitaParaEliminar"]) && isset($_GET["correoParaEliminar"]) && isset($_GET["datosCitaParaEliminar"])&&isset($_GET["idEmpresa"])) {
 	$daoCitas = new CitaDao();
 	$idCitaParaEliminar = $_GET["idCitaParaEliminar"];
 	$correo = $_GET["correoParaEliminar"];
+	$idEmpresa = $_GET["idEmpresa"];
 
 	$datos = $_GET['datosCitaParaEliminar'];
 
 	$daoCitas->eliminarCita($idCitaParaEliminar);
-	crearNotificacion($correo, $datos);
+	crearNotificacion($correo, $datos, $idEmpresa);
 
 	echo json_encode("Cita eliminada");
 }
 
-function crearNotificacion($correo, $datos)
+function crearNotificacion($correo, $datos, $idEmpresa)
 {
 	$datos = json_decode($datos, true);
-	$notificacion = new Notificacion("Reserva Cancelada", "Se ha cancelado tu reserva de  " . $datos['servicio'] . " el " . $datos['fecha'] . " de " . $datos['mes'] . " de " . $datos['año'] . " a las " . $datos['hora'], $correo, "");
+	$notificacion = new Notificacion("Reserva Cancelada", "Se ha cancelado tu reserva de  " . $datos['servicio'] . " del " . $datos['fecha'] . " a las " . $datos['hora'], $correo, $idEmpresa);
 
 	$notificacion->setImagen_notificacion("./img/notificacion-eliminar.png");
 	$daoNotificacion = new NotificacionDAO();
 	$daoNotificacion->crearNotificacion($notificacion);
 
 	$notificacion->enviarNotificacionCorreo($notificacion);
+}
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Obtén el cuerpo de la solicitud
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    // Verifica si los datos necesarios están presentes
+    if (isset($data['idCita'], $data['nuevaFecha'], $data['nuevaHora'])) {
+        $idCita = $data['idCita'];
+        $nuevaFecha = $data['nuevaFecha'];
+        $nuevaHora = $data['nuevaHora'];
+		$mes = $nuevaFecha['mes'];
+		$fecha = $nuevaFecha['fecha'];
+		$año = $nuevaFecha['año'];
+
+       
+        // Actualizar la cita
+        $daoCitas = new CitaDao();
+        $respuesta = $daoCitas->actualizarCita($idCita, $fecha, $mes, $año, $nuevaHora);
+
+       echo json_encode($respuesta);
+    } else {
+        echo json_encode("Faltan datos necesarios.");
+    }
 }

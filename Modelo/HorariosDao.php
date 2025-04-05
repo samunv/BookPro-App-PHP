@@ -11,25 +11,25 @@ class HorariosDao
     }
 
     public function leerHorarios()
-{
-    $sql = "SELECT hora FROM horarios";
-    $stmt = $this->conexion->getConexion()->prepare($sql);
-    $stmt->execute();
-    $result = $stmt->get_result();
+    {
+        $sql = "SELECT * FROM horarios";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->execute();
+        $result = $stmt->get_result();
 
-    $datosArray = array();
-    while ($reg = $result->fetch_assoc()) {
-        $datosArray[] = $reg['hora'];
+        $datosArray = array();
+        while ($reg = $result->fetch_assoc()) {
+            $datosArray[] = $reg;
+        }
+
+        $stmt->close();
+        return $datosArray;
     }
-
-    $stmt->close();
-    return $datosArray;  
-}
 
 
     public function leerHorariosProfesional($idProfesional)
     {
-        $sql = "SELECT h.hora FROM horarios h
+        $sql = "SELECT * FROM horarios h
             INNER JOIN horario_profesional hp ON h.idHorario = hp.idHorario
             WHERE hp.idProfesional = ?";
         $stmt = $this->conexion->getConexion()->prepare($sql);
@@ -39,11 +39,9 @@ class HorariosDao
 
         $datosArray = array();
         while ($reg = $result->fetch_assoc()) {
-            $datosArray[] = $reg['hora'];
+            $datosArray[] = $reg;
         }
         $stmt->close();
-
-        // Devolver el array con las horas
         return $datosArray;
     }
 
@@ -72,9 +70,6 @@ class HorariosDao
             return json_encode(['error' => 'Error en la consulta SQL: ' . $this->conexion->getConexion()->error]);
         }
 
-        // Asociar los parámetros en el orden correcto
-        // 1. idProfesional (de la tabla horario_profesional)
-        // 2. fecha, mes, año (de la cita)
         // 3. idProfesional (de la cita en la subconsulta)
         $stmt->bind_param("isssi", $idProfesional, $fecha, $mes, $año, $idProfesional);
 
@@ -100,5 +95,32 @@ class HorariosDao
 
         // Cerrar la declaración
         $stmt->close();
+    }
+
+    public function eliminarHorariosPorProfesional($idProfesional)
+    {
+        $sql = "DELETE FROM horario_profesional WHERE idProfesional = ?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("i", $idProfesional);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function agregarHorarioParaProfesional($idProfesional, $idHorario)
+    {
+        $sql = "INSERT INTO horario_profesional (idProfesional, idHorario) VALUES (?, ?)";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("ii", $idProfesional, $idHorario);
+        if ($stmt->execute()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

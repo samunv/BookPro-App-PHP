@@ -18,7 +18,7 @@ if (isset($_GET["idUsuario"])) {
 	$idCita = $_GET['idCita'];
 	$resultado = $daoCitas->leerCitaPorId($idCita);
 	echo json_encode($resultado);
-} else if (isset($_GET["idCitaEliminar"]) && isset($_GET["datosCita"])&&isset($_GET["idEmpresa"])) {
+} else if (isset($_GET["idCitaEliminar"]) && isset($_GET["datosCita"]) && isset($_GET["idEmpresa"])) {
 	$idCitaEliminar = $_GET['idCitaEliminar'];
 	$idEmpresa = $_GET["idEmpresa"];
 	$resultadoEliminar = $daoCitas->eliminarCita($idCitaEliminar);
@@ -26,16 +26,15 @@ if (isset($_GET["idUsuario"])) {
 	crearNotificacion($datosCita, $idEmpresa);
 	echo json_encode($resultadoEliminar);
 }
-if (isset($_GET["correoUsuario"])&&isset($_GET["idEmpresa"])) {
+if (isset($_GET["correoUsuario"]) && isset($_GET["idEmpresa"])) {
 	$correo = $_GET["correoUsuario"];
 	$idEmpresa = $_GET["idEmpresa"];
 	$daoUs = new UsuariosDao();
 	$resultado = $daoUs->leerUsuarioPorCorreo($correo, $idEmpresa);
 	echo json_encode($resultado);
 }
-if(isset($_GET["fechaRecordatorio"])&&($_GET["horaRecordatorio"])&&($_GET["datosCita"])){
+if (isset($_GET["fechaRecordatorio"]) && ($_GET["horaRecordatorio"]) && ($_GET["datosCita"])) {
 	$datosCita = json_decode($_GET["datosCita"], true);
-
 }
 
 function crearNotificacion($datos, $idEmpresa)
@@ -48,6 +47,4 @@ function crearNotificacion($datos, $idEmpresa)
 	$daoNot->crearNotificacion($notificacion);
 }
 
-function crearRecordatorio($datos){
-
-}
+function crearRecordatorio($datos) {}

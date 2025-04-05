@@ -78,3 +78,30 @@ if(isset($_GET["idProfesionalParaHorarios"])){
     $resultado = $daoHorario->leerHorariosProfesional($_GET["idProfesionalParaHorarios"]);
     echo json_encode($resultado);
 }
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['idProfesionalParaActualizarHorarios'])) {
+    $idProfesional = $_GET['idProfesionalParaActualizarHorarios'];
+    
+    // Leemos el cuerpo de la solicitud (el JSON enviado)
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    // Si no recibimos los horarios, devolvemos un error
+    if (!isset($data['horarios'])) {
+        echo json_encode(['error' => 'No se han enviado los horarios']);
+        exit;
+    }
+
+    $horarios = $data['horarios'];
+    $daoHorarios = new HorariosDao();
+
+    // Eliminar las relaciones previas del profesional con los horarios
+    $daoHorarios->eliminarHorariosPorProfesional($idProfesional);
+
+    foreach ($horarios as $horaProfesional) {
+        $idHorario = $horaProfesional['idHorario'];
+        $daoHorarios->agregarHorarioParaProfesional($idProfesional, $idHorario);
+    }
+
+    // Enviamos la respuesta indicando que todo salió bien
+    echo json_encode(['message' => 'Horarios actualizados exitosamente']);
+}

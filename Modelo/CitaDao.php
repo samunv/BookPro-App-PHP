@@ -84,7 +84,7 @@ class CitaDao
         $consulta = mysqli_query($this->conexion->getConexion(), "
             SELECT 
                 citas.*,                     -- Seleccionar todo de citas
-                usuarios.nombre AS nombreProfesional,  -- Nombre del usuario asociado al profesional
+                usuarios.nombre AS nombreProfesional,  -- Seleccionar el nombre del profesional
                 usuarios.correo AS correoProfesional,
                 servicios.*                  -- Seleccionar todo de servicios
             FROM 
@@ -236,5 +236,31 @@ HAVING COUNT(DISTINCT hora) = (SELECT COUNT(*) FROM horarios)") or die("Error en
         }
 
         return false;  // Error al preparar la consulta
+    }
+
+    public function actualizarCita($idCita, $fecha, $mes, $año, $nuevaHora)
+    {
+        // Verificar que los parámetros no estén vacíos o nulos
+        if (empty($fecha) || empty($mes) || empty($año) || empty($nuevaHora) || empty($idCita)) {
+            return json_encode(["status" => "error", "message" => "Faltan parámetros necesarios"]);
+        }
+
+        // Consulta SQL para actualizar la cita
+        $sql = "UPDATE citas SET fecha = ?, mes = ?, año = ?, hora = ? WHERE idCita = ?";
+
+        // Preparar la consulta
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+
+        // Asegúrate de que los tipos de los parámetros sean correctos
+        $stmt->bind_param("ssssi", $fecha, $mes, $año, $nuevaHora, $idCita);
+
+        // Ejecutar la consulta
+        if ($stmt->execute()) {
+            return
+                ["exito"  => "Cita actualizada correctamente"];
+        } else {
+            // Si algo falla, devuelve el error detallado de la base de datos
+            return ["error" => $stmt->error];
+        }
     }
 }

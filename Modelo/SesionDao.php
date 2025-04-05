@@ -15,7 +15,6 @@ class SesionDao {
         $stmt = $this->conexion->getConexion()->prepare($query);
 
         $stmt->bind_param('sii', $tokenSesion, $idUsuario, $idEmpresa);
-
         if ($stmt->execute()) {
             $idSesion = $stmt->insert_id;
             return true;
