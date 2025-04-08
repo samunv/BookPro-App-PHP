@@ -1,10 +1,9 @@
 <?php
 $allowed_origins = [
     "http://localhost:5173",
-    "https://bookpro-b0751.web.app",
     "http://localhost:4173",
-    "https://bookpro-app.web.app",
-    "http://localhost:5174"
+    "http://localhost:5174",
+    "https://agenfy.netlify.app"
 ];
 
 // Si el origen de la solicitud está en la lista, se permite

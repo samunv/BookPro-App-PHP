@@ -76,18 +76,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);
 
     // Verifica si los datos necesarios están presentes
-    if (isset($data['idCita'], $data['nuevaFecha'], $data['nuevaHora'])) {
+    if (isset($data['idCita'], $data['nuevaFecha'], $data['nuevaHora'], $data['idProfesional'], $data['idServicio'])) {
         $idCita = $data['idCita'];
         $nuevaFecha = $data['nuevaFecha'];
         $nuevaHora = $data['nuevaHora'];
 		$mes = $nuevaFecha['mes'];
 		$fecha = $nuevaFecha['fecha'];
 		$año = $nuevaFecha['año'];
+		$idProfesional = $data['idProfesional'];
+		$idServicio = $data['idServicio'];
 
        
         // Actualizar la cita
         $daoCitas = new CitaDao();
-        $respuesta = $daoCitas->actualizarCita($idCita, $fecha, $mes, $año, $nuevaHora);
+        $respuesta = $daoCitas->actualizarCita($idCita, $fecha, $mes, $año, $nuevaHora, $idProfesional, $idServicio);
+		// Verificar si la actualización fue exitosa
 
        echo json_encode($respuesta);
     } else {

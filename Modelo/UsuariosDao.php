@@ -70,6 +70,15 @@ class UsuariosDao
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
+    public function leerUsuariosPorIdEmpresa($idEmpresa)
+    {
+        $sql = "SELECT * FROM usuarios WHERE idEmpresa=?";
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("i", $idEmpresa);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
     public function obtenerId($correo, $idEmpresa)
     {
         $sql = "SELECT idUsuario FROM usuarios WHERE correo=? AND idEmpresa=?";

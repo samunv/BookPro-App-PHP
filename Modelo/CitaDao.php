@@ -30,7 +30,7 @@ class CitaDao
     {
         $consulta = mysqli_query($this->conexion->getConexion(), "
         SELECT 
-            citas.*, 
+            citas.*,
             usuarios.correo,
             usuarios.telefono, 
             usuarios.nombre, 
@@ -78,6 +78,95 @@ class CitaDao
         }
         return $datosArray;
     }
+
+
+    public function leerCitasPorIdEmpresa($idEmpresa)
+    {
+        $conexion = $this->conexion->getConexion();
+
+        $sql = "SELECT citas.* 
+            FROM citas 
+            INNER JOIN usuarios ON citas.idUsuario = usuarios.idUsuario 
+            WHERE usuarios.idEmpresa = ?";
+
+        $stmt = $conexion->prepare($sql);
+        if (!$stmt) {
+            die("Error al preparar la consulta: " . $conexion->error);
+        }
+
+        $stmt->bind_param("i", $idEmpresa); // Asumiendo que idEmpresa es un entero
+        $stmt->execute();
+
+        $resultado = $stmt->get_result();
+        $datosArray = [];
+
+        while ($reg = $resultado->fetch_assoc()) {
+            $datosArray[] = $reg;
+        }
+
+        $stmt->close();
+
+        return $datosArray;
+    }
+
+    public function leerCitasPorAño($idEmpresa, $año)
+    {
+        $conexion = $this->conexion->getConexion();
+
+        $sql = "SELECT citas.* 
+            FROM citas 
+            INNER JOIN usuarios ON citas.idUsuario = usuarios.idUsuario 
+            WHERE usuarios.idEmpresa = ?
+            AND citas.año = ? ";
+
+        $stmt = $conexion->prepare($sql);
+        if (!$stmt) {
+            die("Error al preparar la consulta: " . $conexion->error);
+        }
+
+        $stmt->bind_param("is", $idEmpresa, $año); // Asumiendo que idEmpresa es un entero
+        $stmt->execute();
+
+        $resultado = $stmt->get_result();
+        $datosArray = [];
+
+        while ($reg = $resultado->fetch_assoc()) {
+            $datosArray[] = $reg;
+        }
+
+        $stmt->close();
+
+        return $datosArray;
+    }
+
+
+    public function obtenerIngresosPorIdEmpresa($idEmpresa)
+    {
+        $conexion = $this->conexion->getConexion();
+
+        $sql = "SELECT SUM(servicios.precio) AS ingresosTotales
+            FROM citas
+            INNER JOIN usuarios ON citas.idUsuario = usuarios.idUsuario
+            INNER JOIN servicios ON citas.idServicio = servicios.idServicio
+            WHERE usuarios.idEmpresa = ?";
+
+        $stmt = $conexion->prepare($sql);
+        if (!$stmt) {
+            die("Error al preparar la consulta: " . $conexion->error);
+        }
+
+        $stmt->bind_param("i", $idEmpresa);
+        $stmt->execute();
+
+        $resultado = $stmt->get_result();
+        $fila = $resultado->fetch_assoc();
+
+        $stmt->close();
+
+        // Si no hay citas, SUM() puede devolver null
+        return $fila["ingresosTotales"] ?? 0;
+    }
+
 
     public function leerCitasPorIdUsuario($idUsuario)
     {
@@ -238,11 +327,23 @@ HAVING COUNT(DISTINCT hora) = (SELECT COUNT(*) FROM horarios)") or die("Error en
         return false;  // Error al preparar la consulta
     }
 
-    public function actualizarCita($idCita, $fecha, $mes, $año, $nuevaHora)
+    public function actualizarCita($idCita, $fecha, $mes, $año, $nuevaHora, $idProfesional, $idServicio)
     {
+
         // Verificar que los parámetros no estén vacíos o nulos
         if (empty($fecha) || empty($mes) || empty($año) || empty($nuevaHora) || empty($idCita)) {
-            return json_encode(["status" => "error", "message" => "Faltan parámetros necesarios"]);
+            return json_encode(["error" => "Faltan parámetros necesarios"]);
+        }
+
+        if (!$this->verificarCitaExistente(
+            $fecha,
+            $nuevaHora,
+            $idProfesional,
+            $mes,
+            $año,
+            $idServicio
+        )) {
+            return ["error" => "No se puede cambiar la cita al $fecha de $mes del $año a las $nuevaHora H, porque ya existe una cita en ese hueco."];
         }
 
         // Consulta SQL para actualizar la cita
