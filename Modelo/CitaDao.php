@@ -229,12 +229,11 @@ class CitaDao
             $c->getIdProfesional(),
             $c->getMes(),
             $c->getAño(),
-            $c->getIdServicio()
         )) {
             return ["error" => "La cita ya existe."];
         }
 
-        $sql = "INSERT INTO citas(idUsuario, fecha, hora, idProfesional, mes, año, idServicio) VALUES(?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO citas(idUsuario, fecha, hora, idProfesional, mes, año, idServicio, horaFin) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
         $consulta = $this->conexion->getConexion()->prepare($sql);
         if ($consulta) {
             $fecha = $c->getFecha();
@@ -244,7 +243,8 @@ class CitaDao
             $año = $c->getAño();
             $mes = $c->getMes();
             $idServicio = $c->getIdServicio();
-            $consulta->bind_param("issisii", $idUsuario, $fecha, $hora, $idProfesional, $mes, $año, $idServicio);
+            $horaFin = $c->getHoraFin();
+            $consulta->bind_param("issisiis", $idUsuario, $fecha, $hora, $idProfesional, $mes, $año, $idServicio, $horaFin);
 
             $resultado = $consulta->execute();
             if ($resultado) {
@@ -287,13 +287,13 @@ HAVING COUNT(DISTINCT hora) = (SELECT COUNT(*) FROM horarios)") or die("Error en
         }
     }
 
-    public function verificarCitaExistente($dia, $hora, $idProfesional, $mes, $año, $idServicio)
+    public function verificarCitaExistente($dia, $hora, $idProfesional, $mes, $año)
     {
-        $sql = "SELECT * FROM citas WHERE fecha = ? AND hora = ? AND idProfesional = ? AND mes = ? AND año = ? AND idServicio = ?";
+        $sql = "SELECT * FROM citas WHERE fecha = ? AND hora = ? AND idProfesional = ? AND mes = ? AND año = ?";
         $stmt = $this->conexion->getConexion()->prepare($sql);
 
         if ($stmt) {
-            $stmt->bind_param("ssissi", $dia, $hora, $idProfesional, $mes, $año, $idServicio);
+            $stmt->bind_param("ssiss", $dia, $hora, $idProfesional, $mes, $año);
             $stmt->execute();
 
             $result = $stmt->get_result();
@@ -327,7 +327,7 @@ HAVING COUNT(DISTINCT hora) = (SELECT COUNT(*) FROM horarios)") or die("Error en
         return false;  // Error al preparar la consulta
     }
 
-    public function actualizarCita($idCita, $fecha, $mes, $año, $nuevaHora, $idProfesional, $idServicio)
+    public function actualizarCita($idCita, $fecha, $mes, $año, $nuevaHora, $idProfesional, $idServicio, $nuevaHoraFin)
     {
 
         // Verificar que los parámetros no estén vacíos o nulos
@@ -341,19 +341,18 @@ HAVING COUNT(DISTINCT hora) = (SELECT COUNT(*) FROM horarios)") or die("Error en
             $idProfesional,
             $mes,
             $año,
-            $idServicio
         )) {
             return ["error" => "No se puede cambiar la cita al $fecha de $mes del $año a las $nuevaHora H, porque ya existe una cita en ese hueco."];
         }
 
         // Consulta SQL para actualizar la cita
-        $sql = "UPDATE citas SET fecha = ?, mes = ?, año = ?, hora = ? WHERE idCita = ?";
+        $sql = "UPDATE citas SET fecha = ?, mes = ?, año = ?, hora = ?, horaFin = ? WHERE idCita = ?";
 
         // Preparar la consulta
         $stmt = $this->conexion->getConexion()->prepare($sql);
 
         // Asegúrate de que los tipos de los parámetros sean correctos
-        $stmt->bind_param("ssssi", $fecha, $mes, $año, $nuevaHora, $idCita);
+        $stmt->bind_param("sssssi", $fecha, $mes, $año, $nuevaHora,$nuevaHoraFin, $idCita);
 
         // Ejecutar la consulta
         if ($stmt->execute()) {

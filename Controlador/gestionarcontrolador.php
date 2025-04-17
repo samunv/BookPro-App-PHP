@@ -4,16 +4,26 @@ require_once "../Modelo/ProfesionalesDao.php";
 require_once "../Modelo/Usuarios.php";
 require_once "../Modelo/UsuariosDao.php";
 require_once "../Modelo/HorariosDao.php";
+require_once "../Modelo/ServicioDao.php";
 
 
 $array = array();
 $usuariosDao = new UsuariosDao();
 
-if (isset($_GET["idEmpresa"])) {
-    $profesionalesDao = new ProfesionalesDao();
-    $idEmpresa = $_GET["idEmpresa"];
-    $profesionales = $profesionalesDao->leerProfesionales($idEmpresa);
-    echo json_encode($profesionales);
+if (isset($_GET["idEmpresa"], $_GET["accion"])) {
+    if($_GET["accion"]==="obtenerProfesionales"){
+        $profesionalesDao = new ProfesionalesDao();
+        $idEmpresa = $_GET["idEmpresa"];
+        $profesionales = $profesionalesDao->leerProfesionales($idEmpresa);
+        echo json_encode($profesionales);
+    }
+    if($_GET["accion"]==="obtenerServicios"){
+        $serviciosDao= new ServicioDao();
+        $idEmpresa = $_GET["idEmpresa"];
+        $servicios = $serviciosDao->leerServicios($idEmpresa);
+        echo json_encode($servicios);
+    }
+   
 }
 
 
@@ -67,20 +77,24 @@ if(isset($_GET["idProfesionalEliminar"])){
     echo json_encode($resultado);
 }
 
-if(isset($_GET["horarios"])&& $_GET["horarios"]==="true"){
+if(isset($_GET["horarios"], $_GET["diaSemana"])&& $_GET["horarios"]==="true" ){
     $daoHorario = new HorariosDao();
-    $horarios = $daoHorario->leerHorarios();
+    $diaSemana = $_GET["diaSemana"];
+    $horarios = $daoHorario->leerHorarios($diaSemana);
     echo json_encode($horarios);
 }
 
-if(isset($_GET["idProfesionalParaHorarios"])){
+if(isset($_GET["idProfesionalParaHorarios"], $_GET["diaSemana"])){
     $daoHorario = new HorariosDao();
-    $resultado = $daoHorario->leerHorariosProfesional($_GET["idProfesionalParaHorarios"]);
+    $idProfesional = $_GET["idProfesionalParaHorarios"];
+    $diaSemana = $_GET["diaSemana"];
+    $resultado = $daoHorario->leerHorariosProfesional($idProfesional, $diaSemana);
     echo json_encode($resultado);
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['idProfesionalParaActualizarHorarios'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['idProfesionalParaActualizarHorarios'], $_GET['diaSemana'])) {
     $idProfesional = $_GET['idProfesionalParaActualizarHorarios'];
+    $diaSemana = $_GET['diaSemana'];
     
     // Leemos el cuerpo de la solicitud (el JSON enviado)
     $data = json_decode(file_get_contents('php://input'), true);
@@ -95,13 +109,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['idProfesionalParaActua
     $daoHorarios = new HorariosDao();
 
     // Eliminar las relaciones previas del profesional con los horarios
-    $daoHorarios->eliminarHorariosPorProfesional($idProfesional);
+    $daoHorarios->eliminarHorariosPorProfesional($idProfesional, $diaSemana);
 
     foreach ($horarios as $horaProfesional) {
         $idHorario = $horaProfesional['idHorario'];
-        $daoHorarios->agregarHorarioParaProfesional($idProfesional, $idHorario);
+        $daoHorarios->agregarHorarioConDiaSemana($idProfesional, $idHorario, $diaSemana);
     }
 
     // Enviamos la respuesta indicando que todo salió bien
-    echo json_encode(['message' => 'Horarios actualizados exitosamente']);
+    echo json_encode(['exito' => 'Horarios actualizados exitosamente']);
 }

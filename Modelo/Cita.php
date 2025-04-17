@@ -28,6 +28,11 @@ class Cita
     private $hora;
 
     /**
+     * @var string
+     */
+    private $horaFin;
+
+    /**
      * @var int
      */
     private $idProfesional;
@@ -42,7 +47,7 @@ class Cita
      */
     private $año;
 
-     /**
+    /**
      * @var int
      */
     private $idServicio;
@@ -58,11 +63,12 @@ class Cita
      * @param string $mes
      * @param int $año
      */
-    public function __construct($idUsuario, $fecha, $hora, $idProfesional, $mes, $año, $idServicio)
+    public function __construct($idUsuario, $fecha, $hora, $horaFin, $idProfesional, $mes, $año, $idServicio)
     {
         $this->idUsuario = $idUsuario;
         $this->fecha = $fecha;
         $this->hora = $hora;
+        $this->horaFin = $horaFin;
         $this->idProfesional = $idProfesional;
         $this->mes = $mes;
         $this->año = $año;
@@ -150,6 +156,26 @@ class Cita
     }
 
     /**
+     * Obtiene la hora de la cita.
+     *
+     * @return string
+     */
+    public function getHoraFin()
+    {
+        return $this->horaFin;
+    }
+
+    /**
+     * Establece la hora de la cita.
+     *
+     * @param string $horaFin
+     */
+    public function setHoraFin($horaFin)
+    {
+        $this->horaFin = $horaFin;
+    }
+
+    /**
      * Obtiene el id del profesional.
      *
      * @return int
@@ -223,7 +249,7 @@ class Cita
      * Get the value of idServicio
      *
      * @return  int
-     */ 
+     */
     public function getIdServicio()
     {
         return $this->idServicio;
@@ -235,7 +261,7 @@ class Cita
      * @param  int  $idServicio
      *
      * @return  self
-     */ 
+     */
     public function setIdServicio(int $idServicio)
     {
         $this->idServicio = $idServicio;

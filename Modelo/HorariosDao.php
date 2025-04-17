@@ -9,31 +9,37 @@ class HorariosDao
     {
         $this->conexion = new Conexion();
     }
-
-    public function leerHorarios()
+    public function leerHorarios($diaSemana)
     {
-        $sql = "SELECT * FROM horarios";
+        $sql = "SELECT * FROM horarios WHERE dia_semana = ?";
         $stmt = $this->conexion->getConexion()->prepare($sql);
-        $stmt->execute();
-        $result = $stmt->get_result();
 
+        $stmt->bind_param("s", $diaSemana);
+  
+        $stmt->execute();
+        
+        $result = $stmt->get_result();
         $datosArray = array();
+        
+        // Recoger los resultados
         while ($reg = $result->fetch_assoc()) {
             $datosArray[] = $reg;
         }
-
+    
         $stmt->close();
         return $datosArray;
     }
+    
 
 
-    public function leerHorariosProfesional($idProfesional)
+    public function leerHorariosProfesional($idProfesional, $diaSemana)
     {
         $sql = "SELECT * FROM horarios h
             INNER JOIN horario_profesional hp ON h.idHorario = hp.idHorario
-            WHERE hp.idProfesional = ?";
+            WHERE hp.idProfesional = ? AND h.dia_semana = ?";
+
         $stmt = $this->conexion->getConexion()->prepare($sql);
-        $stmt->bind_param("i", $idProfesional);
+        $stmt->bind_param("is", $idProfesional, $diaSemana);
         $stmt->execute();
         $result = $stmt->get_result();
 
@@ -46,12 +52,12 @@ class HorariosDao
     }
 
 
-    public function leerHorasLibres($fecha, $mes, $año, $idProfesional)
+    public function leerHorasLibres($fecha, $mes, $año, $idProfesional, $diaSemana)
     {
-        $sql = "SELECT h.hora
+        $sql = "SELECT DISTINCT h.hora
             FROM horarios h
             INNER JOIN horario_profesional hp ON h.idHorario = hp.idHorario
-            WHERE hp.idProfesional = ?
+            WHERE hp.idProfesional = ? AND h.dia_semana = ?
             AND h.hora NOT IN (
                 SELECT c.hora
                 FROM citas c
@@ -71,7 +77,7 @@ class HorariosDao
         }
 
         // 3. idProfesional (de la cita en la subconsulta)
-        $stmt->bind_param("isssi", $idProfesional, $fecha, $mes, $año, $idProfesional);
+        $stmt->bind_param("issssi", $idProfesional,$diaSemana, $fecha, $mes, $año, $idProfesional);
 
         // Ejecutar la consulta
         $stmt->execute();
@@ -92,35 +98,38 @@ class HorariosDao
             // Si no se encuentran horas libres, devolver mensaje
             return json_encode(['message' => 'No hay horas libres disponibles para esta fecha.']);
         }
-
-        // Cerrar la declaración
-        $stmt->close();
     }
 
-    public function eliminarHorariosPorProfesional($idProfesional)
+    public function eliminarHorariosPorProfesional($idProfesional, $diaSemana)
     {
-        $sql = "DELETE FROM horario_profesional WHERE idProfesional = ?";
-        $stmt = $this->conexion->getConexion()->prepare($sql);
-        $stmt->bind_param("i", $idProfesional);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $sql = "DELETE hp FROM horario_profesional hp
+            INNER JOIN horarios h ON hp.idHorario = h.idHorario
+            WHERE hp.idProfesional = ? AND h.dia_semana = ?";
 
+        $stmt = $this->conexion->getConexion()->prepare($sql);
+        $stmt->bind_param("is", $idProfesional, $diaSemana);
         if ($stmt->execute()) {
+            $stmt->close();
             return true;
         } else {
+            $stmt->close();
             return false;
         }
     }
 
-    public function agregarHorarioParaProfesional($idProfesional, $idHorario)
+
+    public function agregarHorarioConDiaSemana($idProfesional, $idHorario, $diaSemana)
     {
-        $sql = "INSERT INTO horario_profesional (idProfesional, idHorario) VALUES (?, ?)";
-        $stmt = $this->conexion->getConexion()->prepare($sql);
-        $stmt->bind_param("ii", $idProfesional, $idHorario);
-        if ($stmt->execute()) {
+       //Relacionar el horario con el profesional en la tabla `horario_profesional`
+        $sqlRelacion = "INSERT INTO horario_profesional (idProfesional, idHorario) VALUES (?, ?)";
+        $stmtRelacion = $this->conexion->getConexion()->prepare($sqlRelacion);
+        $stmtRelacion->bind_param("ii", $idProfesional, $idHorario);
+
+        if ($stmtRelacion->execute()) {
             return true;
-        } else {
-            return false;
         }
+        $stmtRelacion->close();
+
+        return false;
     }
 }

@@ -32,11 +32,11 @@ if (isset($_GET["idProfesionalParaCitas"])) {
 	echo json_encode($citasDelProfesional);
 }
 
-if (isset($_GET["obtenerHorarios"]) && $_GET["obtenerHorarios"] === "true") {
-	$daoHorarios = new HorariosDao();
-	$horarios = $daoHorarios->leerHorarios();
-	echo json_encode($horarios);
-}
+// if (isset($_GET["obtenerHorarios"]) && $_GET["obtenerHorarios"] === "true") {
+// 	$daoHorarios = new HorariosDao();
+// 	$horarios = $daoHorarios->leerHorarios();
+// 	echo json_encode($horarios);
+// }
 
 if (isset($_GET["obtenerServicio"]) && $_GET["obtenerServicio"] === "true" && isset($_GET["idProfesionalParaServicios"])) {
 	$daoServ = new ServicioDao();
@@ -76,10 +76,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents("php://input"), true);
 
     // Verifica si los datos necesarios están presentes
-    if (isset($data['idCita'], $data['nuevaFecha'], $data['nuevaHora'], $data['idProfesional'], $data['idServicio'])) {
+    if (isset($data['idCita'], $data['nuevaFecha'], $data['nuevaHora'], $data["nuevaHoraFin"],$data['idProfesional'], $data['idServicio'])) {
         $idCita = $data['idCita'];
         $nuevaFecha = $data['nuevaFecha'];
         $nuevaHora = $data['nuevaHora'];
+		$nuevaHoraFin = $data['nuevaHoraFin'];
 		$mes = $nuevaFecha['mes'];
 		$fecha = $nuevaFecha['fecha'];
 		$año = $nuevaFecha['año'];
@@ -89,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
        
         // Actualizar la cita
         $daoCitas = new CitaDao();
-        $respuesta = $daoCitas->actualizarCita($idCita, $fecha, $mes, $año, $nuevaHora, $idProfesional, $idServicio);
+        $respuesta = $daoCitas->actualizarCita($idCita, $fecha, $mes, $año, $nuevaHora, $idProfesional, $idServicio, $nuevaHoraFin);
 		// Verificar si la actualización fue exitosa
 
        echo json_encode($respuesta);
