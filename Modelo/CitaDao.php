@@ -12,7 +12,7 @@ class CitaDao
 
     public function __construct()
     {
-        return $this->conexion = new Conexion();
+        $this->conexion = new Conexion();
     }
 
     //obtener todas las citas
@@ -71,11 +71,27 @@ class CitaDao
 
     public function leerCitaPorId($id)
     {
-        $consulta = mysqli_query($this->conexion->getConexion(), "SELECT * FROM citas WHERE idCita='$id'") or die("Error en consulta: " . mysqli_error($this->conexion->getConexion()));
+        $conexion = $this->conexion->getConexion();
+        $sql = "
+            SELECT 
+                citas.*, 
+                usuarios.nombre AS nombreUsuario,
+                usuarios.correo AS correoUsuario,
+                usuarios.idEmpresa AS idEmpresa,
+                servicios.nombreServicio AS nombreServicio
+            FROM citas
+            INNER JOIN usuarios ON citas.idUsuario = usuarios.idUsuario
+            INNER JOIN servicios ON citas.idServicio = servicios.idServicio
+            WHERE citas.idCita = '$id'
+        ";
+
+        $consulta = mysqli_query($conexion, $sql) or die("Error en consulta: " . mysqli_error($conexion));
+
         $datosArray = array();
-        while ($reg = mysqli_fetch_array($consulta)) {
+        while ($reg = mysqli_fetch_array($consulta, MYSQLI_ASSOC)) {
             $datosArray[] = $reg;
         }
+
         return $datosArray;
     }
 
@@ -332,7 +348,7 @@ HAVING COUNT(DISTINCT hora) = (SELECT COUNT(*) FROM horarios)") or die("Error en
 
         // Verificar que los parámetros no estén vacíos o nulos
         if (empty($fecha) || empty($mes) || empty($año) || empty($nuevaHora) || empty($idCita)) {
-            return json_encode(["error" => "Faltan parámetros necesarios"]);
+            return ["error" => "Faltan parámetros necesarios"];
         }
 
         if (!$this->verificarCitaExistente(
@@ -352,7 +368,7 @@ HAVING COUNT(DISTINCT hora) = (SELECT COUNT(*) FROM horarios)") or die("Error en
         $stmt = $this->conexion->getConexion()->prepare($sql);
 
         // Asegúrate de que los tipos de los parámetros sean correctos
-        $stmt->bind_param("sssssi", $fecha, $mes, $año, $nuevaHora,$nuevaHoraFin, $idCita);
+        $stmt->bind_param("sssssi", $fecha, $mes, $año, $nuevaHora, $nuevaHoraFin, $idCita);
 
         // Ejecutar la consulta
         if ($stmt->execute()) {

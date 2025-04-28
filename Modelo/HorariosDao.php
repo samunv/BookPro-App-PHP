@@ -15,21 +15,21 @@ class HorariosDao
         $stmt = $this->conexion->getConexion()->prepare($sql);
 
         $stmt->bind_param("s", $diaSemana);
-  
+
         $stmt->execute();
-        
+
         $result = $stmt->get_result();
         $datosArray = array();
-        
+
         // Recoger los resultados
         while ($reg = $result->fetch_assoc()) {
             $datosArray[] = $reg;
         }
-    
+
         $stmt->close();
         return $datosArray;
     }
-    
+
 
 
     public function leerHorariosProfesional($idProfesional, $diaSemana)
@@ -77,7 +77,7 @@ class HorariosDao
         }
 
         // 3. idProfesional (de la cita en la subconsulta)
-        $stmt->bind_param("issssi", $idProfesional,$diaSemana, $fecha, $mes, $año, $idProfesional);
+        $stmt->bind_param("issssi", $idProfesional, $diaSemana, $fecha, $mes, $año, $idProfesional);
 
         // Ejecutar la consulta
         $stmt->execute();
@@ -102,9 +102,10 @@ class HorariosDao
 
     public function eliminarHorariosPorProfesional($idProfesional, $diaSemana)
     {
-        $sql = "DELETE hp FROM horario_profesional hp
-            INNER JOIN horarios h ON hp.idHorario = h.idHorario
-            WHERE hp.idProfesional = ? AND h.dia_semana = ?";
+        $sql = " DELETE hp 
+    FROM horario_profesional hp
+    INNER JOIN horarios h ON hp.idHorario = h.idHorario
+    WHERE hp.idProfesional = ? AND h.dia_semana = ?";
 
         $stmt = $this->conexion->getConexion()->prepare($sql);
         $stmt->bind_param("is", $idProfesional, $diaSemana);
@@ -118,9 +119,9 @@ class HorariosDao
     }
 
 
-    public function agregarHorarioConDiaSemana($idProfesional, $idHorario, $diaSemana)
+    public function agregarHorarioConDiaSemana($idProfesional, $idHorario)
     {
-       //Relacionar el horario con el profesional en la tabla `horario_profesional`
+        //Relacionar el horario con el profesional en la tabla `horario_profesional`
         $sqlRelacion = "INSERT INTO horario_profesional (idProfesional, idHorario) VALUES (?, ?)";
         $stmtRelacion = $this->conexion->getConexion()->prepare($sqlRelacion);
         $stmtRelacion->bind_param("ii", $idProfesional, $idHorario);

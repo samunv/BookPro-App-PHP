@@ -9,7 +9,7 @@ class EmpresaDAO
 
     public function __construct()
     {
-        return $this->conexion = new Conexion();
+        $this->conexion = new Conexion();
     }
 
     // Crear una nueva empresa (INSERT)
@@ -144,7 +144,8 @@ class EmpresaDAO
         logo1por1 = ?, 
         color1 = ?,
         color2 = ?, 
-        banner = ?
+        banner = ?,
+        tipo_negocio = ?
         WHERE idEmpresa = ?";
 
         try {
@@ -155,7 +156,7 @@ class EmpresaDAO
             }
 
             $stmt->bind_param(
-                "sssssssssi",
+                "ssssssssssi",
                 $empresa['nombre_empresa'],
                 $empresa['direccion'],
                 $empresa['cif'],
@@ -165,6 +166,7 @@ class EmpresaDAO
                 $empresa['color1'],
                 $empresa['color2'],
                 $empresa['banner'],
+                $empresa['tipo_negocio'],
                 $idEmpresa
             );
 

@@ -67,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $color1 = $_POST['color1'] ?? null;
     $color2 = $_POST['color2'] ?? null;
     $accion = $_POST['accion'] ?? null;
+    $tipo_negocio = $_POST['tipo_negocio'] ?? null;
 
 
     // Si no se ha subido un nuevo logo, obtener el logo actual de la empresa
@@ -91,7 +92,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             "logo" => $logo,
             "color1" => $color1,
             "color2" => $color2,
-            "banner" => $banner
+            "banner" => $banner,
+            "tipo_negocio" => $tipo_negocio
         ];
 
 

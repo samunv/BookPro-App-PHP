@@ -44,42 +44,32 @@ if (isset($_GET["obtenerServicio"]) && $_GET["obtenerServicio"] === "true" && is
 	echo json_encode($respuesta);
 }
 
-if (isset($_GET["idCitaParaEliminar"]) && isset($_GET["correoParaEliminar"]) && isset($_GET["datosCitaParaEliminar"])&&isset($_GET["idEmpresa"])) {
+if (isset($_GET["idCitaParaEliminar"]) && isset($_GET["correoParaEliminar"]) && isset($_GET["datosCitaParaEliminar"]) && isset($_GET["idEmpresa"])) {
 	$daoCitas = new CitaDao();
 	$idCitaParaEliminar = $_GET["idCitaParaEliminar"];
 	$correo = $_GET["correoParaEliminar"];
 	$idEmpresa = $_GET["idEmpresa"];
-
 	$datos = $_GET['datosCitaParaEliminar'];
+	$datos = json_decode($datos, true);
+	$mensaje = "Se ha cancelado tu reserva de  " . $datos['servicio'] . " del " . $datos['fecha'] . " a las " . $datos['hora'];
 
 	$daoCitas->eliminarCita($idCitaParaEliminar);
-	crearNotificacion($correo, $datos, $idEmpresa);
+	crearNotificacion("Reserva Cancelada", $correo, $idEmpresa, $mensaje);
 
 	echo json_encode("Cita eliminada");
 }
 
-function crearNotificacion($correo, $datos, $idEmpresa)
-{
-	$datos = json_decode($datos, true);
-	$notificacion = new Notificacion("Reserva Cancelada", "Se ha cancelado tu reserva de  " . $datos['servicio'] . " del " . $datos['fecha'] . " a las " . $datos['hora'], $correo, $idEmpresa);
-
-	$notificacion->setImagen_notificacion("./img/notificacion-eliminar.png");
-	$daoNotificacion = new NotificacionDAO();
-	$daoNotificacion->crearNotificacion($notificacion);
-
-	$notificacion->enviarNotificacionCorreo($notificacion);
-}
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Obtén el cuerpo de la solicitud
-    $data = json_decode(file_get_contents("php://input"), true);
+	// Obtén el cuerpo de la solicitud
+	$data = json_decode(file_get_contents("php://input"), true);
 
-    // Verifica si los datos necesarios están presentes
-    if (isset($data['idCita'], $data['nuevaFecha'], $data['nuevaHora'], $data["nuevaHoraFin"],$data['idProfesional'], $data['idServicio'])) {
-        $idCita = $data['idCita'];
-        $nuevaFecha = $data['nuevaFecha'];
-        $nuevaHora = $data['nuevaHora'];
+	// Verifica si los datos necesarios están presentes
+	if (isset($data['idCita'], $data['nuevaFecha'], $data['nuevaHora'], $data["nuevaHoraFin"], $data['idProfesional'], $data['idServicio'])) {
+		$idCita = $data['idCita'];
+		$nuevaFecha = $data['nuevaFecha'];
+		$nuevaHora = $data['nuevaHora'];
 		$nuevaHoraFin = $data['nuevaHoraFin'];
 		$mes = $nuevaFecha['mes'];
 		$fecha = $nuevaFecha['fecha'];
@@ -87,14 +77,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$idProfesional = $data['idProfesional'];
 		$idServicio = $data['idServicio'];
 
-       
-        // Actualizar la cita
-        $daoCitas = new CitaDao();
-        $respuesta = $daoCitas->actualizarCita($idCita, $fecha, $mes, $año, $nuevaHora, $idProfesional, $idServicio, $nuevaHoraFin);
-		// Verificar si la actualización fue exitosa
 
-       echo json_encode($respuesta);
-    } else {
-        echo json_encode("Faltan datos necesarios.");
-    }
+		// Actualizar la cita
+		$daoCitas = new CitaDao();
+		$respuesta = $daoCitas->actualizarCita($idCita, $fecha, $mes, $año, $nuevaHora, $idProfesional, $idServicio, $nuevaHoraFin);
+
+		if (isset($respuesta["exito"])) {
+			echo json_encode($respuesta);
+			$citasDelProfesional = $daoCitas->leerCitaPorId($idCita);
+			// Verificar si la actualización fue exitosa
+
+			if (!empty($citasDelProfesional)) {
+				crearNotificacion(
+					"Reserva Modificada",
+					$citasDelProfesional[0]['correoUsuario'],
+					$citasDelProfesional[0]['idEmpresa'],
+					"Se ha modificado tu reserva de " . $citasDelProfesional[0]['nombreServicio'] . " al " . $fecha . " de " . $mes . " del " . $año . " a las " . $nuevaHora
+				);
+			}
+		}else{
+			echo json_encode($respuesta);
+		}
+	} else {
+		echo json_encode("Faltan datos necesarios.");
+	}
+}
+
+
+function crearNotificacion($titulo, $correo, $idEmpresa, $mensaje)
+{
+	$notificacion = new Notificacion($titulo, $mensaje, $correo, $idEmpresa);
+
+	$notificacion->setImagen_notificacion("./img/notificacion-eliminar.png");
+	$daoNotificacion = new NotificacionDAO();
+	$daoNotificacion->crearNotificacion($notificacion);
+
+	$notificacion->enviarNotificacionCorreo($notificacion);
 }
